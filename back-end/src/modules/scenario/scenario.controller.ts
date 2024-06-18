@@ -24,10 +24,10 @@ class ScenarioController {
         return res.status(200).json(req.mongoGet);
     }
 
-    @Route('get', 'credentialId/:id')
+    @Route('get', '/credentialId/:id')
     @getByCredential(Scenario, ['scenario_items_id'])
     getByUserCredential(req: Request, res: Response, next: NextFunction) {
-        return res.status(200).json(req.mongoGet);
+        return res.status(200).json(req.mongoGetAlls);
     }
     @Route('post', '/create')
     @MongoCreate(Scenario)

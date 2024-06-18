@@ -7,8 +7,12 @@ export function getByCredential(model: Model<any>, populate?: string[]) {
 
         descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
             try {
+                console.log(req.params.id);
+                
                 const documents = await model.find({credential_id: req.params.id}).populate(populate || [])
-                req.mongoQuery = documents;
+                console.log(documents);
+                
+                req.mongoGetAlls = documents;
             } catch (error) {
                 // logging.error(error);
 
