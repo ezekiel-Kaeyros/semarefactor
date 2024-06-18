@@ -1,31 +1,35 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Node.js CI
+name: CI Pipeline_staging
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - uses: actions/checkout@v3
+
+      - name: Login github registry
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+      - name: Create .env file
+        run: |
+          cd back-end && \
+          touch .env && \
+          echo "PORT=3000" > .env && \
+          echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env && \
+          echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env && \
+          echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
+      - name: Build the Docker image for backend
+        run: |
+          cd back-end && \
+          docker build -t ezekielkaeyros/semabackendrefactor:latest .
+
+      - name: Push to Dockerhub for backend
+        run: |
+          docker push ezekielkaeyros/semabackendrefactor:latest
+
