@@ -80,13 +80,16 @@ jobs:
           npm run build
 
       - name: Archive build artifacts
+        run: |
+          cd back-end
+          tar -czvf backend-artifacts.tar.gz .env dist node_modules
+        shell: bash
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: backend-artifacts
-          path: |
-            back-end/.env
-            back-end/dist
-            back-end/node_modules
+          path: back-end/backend-artifacts.tar.gz
 
   test:
     name: Test Job
@@ -175,6 +178,12 @@ jobs:
         with:
           name: backend-artifacts
           path: back-end
+
+      - name: Extract build artifacts
+        run: |
+          cd back-end
+          tar -xzvf backend-artifacts.tar.gz
+        shell: bash
 
       - name: Login to Docker Hub
         env:
