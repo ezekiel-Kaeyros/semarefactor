@@ -56,33 +56,37 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: cd backend && npm install
+        run: |
+          cd back-end
+          npm install
 
       - name: Create .env file
         run: |
-          cd backend && \
-          touch .env && \
-          echo "PORT=3000" > .env && \
-          echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env && \
-          echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env && \
+          cd back-end
+          touch .env
+          echo "PORT=3000" > .env
+          echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env
+          echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env
           echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
 
       - name: Build the application
-        run: cd backend && npm run build
+        run: |
+          cd back-end
+          npm run build
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: backend-artifacts
           path: |
-            backend/.env
-            backend/.next
-            backend/node_modules
+            back-end/.env
+            back-end/dist
+            back-end/node_modules
 
   test:
     name: Test Job
@@ -100,15 +104,19 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: cd backend && npm install
+        run: |
+          cd back-end
+          npm install
 
       - name: Run tests
-        run: cd backend && npm test
+        run: |
+          cd back-end
+          npm test
 
   quality:
     name: Code Quality Job
@@ -123,7 +131,9 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: cd backend && npm install
+        run: |
+          cd back-end
+          npm install
 
       - name: Run Code Climate Analysis
         uses: docker://codeclimate/codeclimate
@@ -134,7 +144,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: codequality-results
-          path: backend/codequality-results/
+          path: codequality-results/
 
   package:
     name: Package Job
@@ -156,7 +166,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -164,7 +174,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: backend-artifacts
-          path: backend
+          path: back-end
 
       - name: Login to Docker Hub
         env:
@@ -173,8 +183,8 @@ jobs:
         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
       - name: Build Docker image
-        working-directory: backend
         run: |
+          cd back-end
           docker build -t ezekielkaeyros/semabackendrefactor:latest .
 
       - name: Push Docker image
