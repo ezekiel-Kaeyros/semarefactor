@@ -32,9 +32,13 @@ class WebhookController {
 
     @Route('post', '')
     async chatbot(req: Request, res: Response, next: NextFunction) {
+       
         try {
             const body = req.body;
-        
+
+            console.log(`\u{1F7EA} Received webhook:`);
+            console.dir(body, { depth: null });
+            
             // Validate the request body format
             if (!WhatsappHelperMethode.contentMessageIsValid(body)) {
                 return res.status(200).send({});

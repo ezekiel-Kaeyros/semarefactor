@@ -7,7 +7,7 @@ import { MongoUpdate } from '../../core/decorators/mongoose/update';
 import { MongoDelete } from '../../core/decorators/mongoose/delete';
 import { Controller } from '../../core/decorators/controller';
 import { Route } from '../../core/decorators/route';
-import Conversation from '../../core/database/schemas/scenario.schema';
+import Conversation from '../../core/database/schemas/conversation.schema';
 
 @Controller('/conversation')
 class ConversationController {

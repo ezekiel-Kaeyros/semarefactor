@@ -195,6 +195,7 @@ class WebhookService {
       }
   
       const updatedScenarioItem = await scenarioRepository.findScenarioItemWithChildren(scenarioItem);
+      
       const bodyRequest = WhatsappHelperMethode.bodyBotMessageByScenarioItem(updatedScenarioItem, phoneNumber);
   
       if (!bodyRequest) {

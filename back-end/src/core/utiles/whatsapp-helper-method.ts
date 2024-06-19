@@ -36,12 +36,12 @@ export class WhatsappHelperMethode {
                 break;
             case 'button':
                 recipient = {type: 'button', message: scenarioItem.label!, recipientPhone: phone_number, listOfButtons: scenarioItem.childrenDetails?.map(item => (
-                    {id: item.uuid, title: item.label!} as ButtonContent
+                    {id: item._id, title: item.label!} as ButtonContent
                 )) ?? []}
                 break;
             case 'list':
                 recipient = {type: 'list', message: scenarioItem.label!, recipientPhone: phone_number, listOfSections: scenarioItem.childrenDetails?.map(item => (
-                    {id: item.uuid, title: item.label!} as ButtonContent
+                    {id: item._id, title: item.label!} as ButtonContent
                 )) ?? []}
                 break;
             case 'image':
