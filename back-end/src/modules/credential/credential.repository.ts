@@ -15,13 +15,14 @@ class CredentialsRepository {
             const credentials = await Credentials.findOne({phone_number_id});
 
             if (!credentials) {
-                throw new Error('Credential not found');
+                // throw new Error('Credential not found');
+                console.log('Credential not found');
             }
 
             return credentials;
         } catch (error) {
             console.error('Error retrieving the credential by phone_number_id:', error);
-            throw error;
+            
         }
         
     }
