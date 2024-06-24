@@ -1,39 +1,3 @@
-# name: CI Pipeline_staging
-
-# on:
-#   push:
-#     branches: [ "main" ]
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-
-#       - name: Login github registry
-#         env:
-#           DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-#           DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-#         run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-
-#       - name: Create .env file
-#         run: |
-#           cd back-end && \
-#           touch .env && \
-#           echo "PORT=3000" > .env && \
-#           echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env && \
-#           echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env && \
-#           echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
-#       - name: Build the Docker image for backend
-#         run: |
-#           cd back-end && \
-#           docker build -t ezekielkaeyros/semabackendrefactor:latest .
-
-#       - name: Push to Dockerhub for backend
-#         run: |
-#           docker push ezekielkaeyros/semabackendrefactor:latest
-
-
 name: CI Pipeline_staging
 
 on:
@@ -42,159 +6,195 @@ on:
 
 jobs:
   build:
-    name: Build Job
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: |
-          cd back-end
-          npm install
+      - name: Login github registry
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
       - name: Create .env file
         run: |
-          cd back-end
-          touch .env
-          echo "PORT=3000" > .env
-          echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env
-          echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env
+          cd back-end && \
+          touch .env && \
+          echo "PORT=3000" > .env && \
+          echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env && \
+          echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env && \
           echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
-
-      - name: Build the application
+      - name: Build the Docker image for backend
         run: |
-          cd back-end
-          npm run build
-
-      - name: Archive build artifacts
-        run: |
-          cd back-end
-          tar -czvf backend-artifacts.tar.gz .env dist node_modules
-        shell: bash
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-artifacts
-          path: back-end/backend-artifacts.tar.gz
-
-  test:
-    name: Test Job
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: |
-          cd back-end
-          npm install
-
-      - name: Run tests
-        run: |
-          cd back-end
-          npm test
-
-  quality:
-    name: Code Quality Job
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          cd back-end
-          npm install
-
-      - name: Run Code Climate Analysis
-        uses: docker://codeclimate/codeclimate
-        with:
-          args: analyze -f html > ./codequality-results/index.html
-
-      - name: Upload Code Quality Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: codequality-results
-          path: codequality-results/
-
-  package:
-    name: Package Job
-    runs-on: ubuntu-latest
-    needs: quality
-    services:
-      docker:
-        image: docker:20.10.16
-        options: --privileged
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: backend-artifacts
-          path: back-end
-
-      - name: Extract build artifacts
-        run: |
-          cd back-end
-          tar -xzvf backend-artifacts.tar.gz
-        shell: bash
-
-      - name: Login to Docker Hub
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-
-      - name: Build Docker image
-        run: |
-          cd back-end
+          cd back-end && \
           docker build -t ezekielkaeyros/semabackendrefactor:latest .
 
-      - name: Push Docker image
-        run: docker push ezekielkaeyros/semabackendrefactor:latest
+      - name: Push to Dockerhub for backend
+        run: |
+          docker push ezekielkaeyros/semabackendrefactor:latest
+
+
+# name: CI Pipeline_staging
+
+# on:
+#   push:
+#     branches: [ "main" ]
+
+# jobs:
+#   build:
+#     name: Build Job
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+
+#       - name: Cache Node.js modules
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
+
+#       - name: Install dependencies
+#         run: |
+#           cd back-end
+#           npm install
+
+#       - name: Create .env file
+#         run: |
+#           cd back-end
+#           touch .env
+#           echo "PORT=3000" > .env
+#           echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env
+#           echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env
+#           echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
+
+#       - name: Build the application
+#         run: |
+#           cd back-end
+#           npm run build
+
+#       - name: Archive build artifacts
+#         run: |
+#           cd back-end
+#           tar -czvf backend-artifacts.tar.gz .env dist node_modules
+#         shell: bash
+
+#       - name: Upload build artifacts
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: backend-artifacts
+#           path: back-end/backend-artifacts.tar.gz
+
+#   test:
+#     name: Test Job
+#     runs-on: ubuntu-latest
+#     needs: build
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+
+#       - name: Cache Node.js modules
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
+
+#       - name: Install dependencies
+#         run: |
+#           cd back-end
+#           npm install
+
+#       - name: Run tests
+#         run: |
+#           cd back-end
+#           npm test
+
+#   quality:
+#     name: Code Quality Job
+#     runs-on: ubuntu-latest
+#     needs: test
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+
+#       - name: Install dependencies
+#         run: |
+#           cd back-end
+#           npm install
+
+#       - name: Run Code Climate Analysis
+#         uses: docker://codeclimate/codeclimate
+#         with:
+#           args: analyze -f html > ./codequality-results/index.html
+
+#       - name: Upload Code Quality Results
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: codequality-results
+#           path: codequality-results/
+
+#   package:
+#     name: Package Job
+#     runs-on: ubuntu-latest
+#     needs: quality
+#     services:
+#       docker:
+#         image: docker:20.10.16
+#         options: --privileged
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+
+#       - name: Cache Node.js modules
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/back-end/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
+
+#       - name: Download build artifacts
+#         uses: actions/download-artifact@v3
+#         with:
+#           name: backend-artifacts
+#           path: back-end
+
+#       - name: Extract build artifacts
+#         run: |
+#           cd back-end
+#           tar -xzvf backend-artifacts.tar.gz
+#         shell: bash
+
+#       - name: Login to Docker Hub
+#         env:
+#           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+#           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+#       - name: Build Docker image
+#         run: |
+#           cd back-end
+#           docker build -t ezekielkaeyros/semabackendrefactor:latest .
+
+#       - name: Push Docker image
+#         run: docker push ezekielkaeyros/semabackendrefactor:latest
