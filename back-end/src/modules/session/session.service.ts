@@ -24,7 +24,9 @@ class SessionService {
             switch (whatsappRequestData.type) {
                 case TypeWhatsappMessage.TEXT:
                 case TypeWhatsappMessage.IMAGE:
-                    const scenarioItem = await scenarioItemRepository.findChildByUuid(session.current_scenario_item_id);
+                    console.log("old session", session);
+                    const scenarioItem = await scenarioItemRepository.findChildByIdParent(session.current_scenario_item_id);
+                    console.log("child scenarioItem", scenarioItem);
                     session.current_scenario_item_id = scenarioItem?.id;
                     break;
                 case TypeWhatsappMessage.INTERACTIVE:
@@ -47,16 +49,22 @@ class SessionService {
     }
 
     public async sessionIsValid(conversationId: string): Promise<boolean> {
-        const session = await sessionRepository.getMostRecentActiveSession(conversationId);
-        if (!session) {
-            return false;
-        }
+       try {
+            const session = await sessionRepository.getMostRecentActiveSession(conversationId);
+            if (!session) {
+                return false;
+            }
 
-        if (HelperMethod.getDifferenceInMinutes(new Date(session.updatedAt)) > TimeValidSession.WHATSAPP_VALIDITY_MINUTE) {
-            return false;
-        }
+            if (HelperMethod.getDifferenceInMinutes(new Date(session.updatedAt)) > TimeValidSession.WHATSAPP_VALIDITY_MINUTE) {
+                return false;
+            }
 
-        return true;
+            return true;
+       } catch (error) {
+            console.log('error sessionIsValid', error);
+            throw error;
+       }
+       
     }
 }
 

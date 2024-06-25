@@ -7,7 +7,7 @@ declare global {
             mongoGet: Document | undefined;
             mongoGetAll: Document[];
             mongoGetAlls: Document[];
-            mongoCreate: Document | undefined;
+            mongoCreate: Document | Document[] | undefined;
             mongoUpdate: Document | undefined;
             mongoQuery: Document[];
             mongoAuthRes: any;

@@ -2,6 +2,11 @@ import { title } from "process";
 import { ScenarioItemsDoc } from "../modeles/scenario-item.model";
 import { ButtonContent, IWhatsappRequestData, SendWAButtonModel, SendWACatalogModel, SendWAImageModel, SendWAListModel, SendWAMessageModel, SendWAProductsTemplateModel, SendWATextModel, WAButtons, WACatalog, WAImage, WAList, WARecipient, WATemplate, WAText } from "../modeles/whatsapp.model";
 import { TypeSendWhatsappMessage, TypeWhatsappMessage } from "../enums/scenario.enum";
+import { SessionDoc } from "../modeles/session.model";
+import { chatRepository } from "../../modules/chat/chat.repository";
+import { ChatOrigin } from "../enums/message.enum";
+import { CredentialsDoc } from "../modeles/credential.model";
+import { StandardMessageEnum } from "../enums/message.enum";
 
 export class WhatsappHelperMethode {
 
@@ -30,9 +35,17 @@ export class WhatsappHelperMethode {
      */
     static bodyBotMessageByScenarioItem(scenarioItem: ScenarioItemsDoc, phone_number: string): SendWAMessageModel | undefined {
         let recipient: WARecipient | undefined;
+        if (!scenarioItem.childrenDetails) {
+            return WhatsappHelperMethode.bodyBotMessage({
+                type: 'text',
+                recipientPhone: phone_number,
+                message: StandardMessageEnum.INCOMPLTE_SCENARIO
+            });
+        }
+
         switch (scenarioItem.type) {
             case 'text':
-                recipient = {type: 'text', message: scenarioItem.label!, recipientPhone: phone_number}
+                recipient = {type: 'text', message: scenarioItem.childrenDetails[0].label!, recipientPhone: phone_number}
                 break;
             case 'button':
                 recipient = {type: 'button', message: scenarioItem.label!, recipientPhone: phone_number, listOfButtons: scenarioItem.childrenDetails?.map(item => (
@@ -45,7 +58,7 @@ export class WhatsappHelperMethode {
                 )) ?? []}
                 break;
             case 'image':
-                recipient = {type: 'image', link: scenarioItem.url!, recipientPhone: phone_number}
+                recipient = {type: 'image', link: scenarioItem.childrenDetails[0].url!, recipientPhone: phone_number}
                 break;
             default:
                 break;
@@ -280,5 +293,28 @@ export class WhatsappHelperMethode {
         }).join('');
 
         return `${text}\n${button}:\n${formattedSections}`;
+    }
+
+    public static async formatRapport(session: SessionDoc, credential: CredentialsDoc): Promise<string> {
+        const chatFlows = session.chat_flow ?? [];
+        const messages: string[] = [];
+    
+        for (const chatFlow of chatFlows) {
+            if (chatFlow.to_display) {
+                try {
+                    const chat = await chatRepository.getById(chatFlow.chatId);
+                    if (chat) {
+                        const sender = chat.origin === ChatOrigin.USER ? 'Moi: ' : `${credential.company}: `;
+                        const text = chat.text ?? '';
+                        const url = chat.url ?? '';
+                        messages.push(`${sender}${text}\n${url}`);
+                    }
+                } catch (error) {
+                    console.error(`Error fetching chat with ID ${chatFlow.chatId}:`, error);
+                }
+            }
+        }
+    
+        return messages.join('\n');
     }
 }

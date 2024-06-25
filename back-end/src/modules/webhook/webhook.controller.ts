@@ -36,8 +36,8 @@ class WebhookController {
         try {
             const body = req.body;
 
-            console.log(`\u{1F7EA} Received webhook:`);
-            console.dir(body, { depth: null });
+            // console.log(`\u{1F7EA} Received webhook:`);
+            // console.dir(body, { depth: null });
             
             // Validate the request body format
             if (!WhatsappHelperMethode.contentMessageIsValid(body)) {

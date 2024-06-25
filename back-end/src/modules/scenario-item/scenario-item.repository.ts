@@ -4,10 +4,10 @@ import { ScenarioItemsDoc } from "../../core/modeles/scenario-item.model"
 
 class ScenrarioItemRepository {
 
-    async findChildByUuid(idParent: Types.ObjectId): Promise<ScenarioItemsDoc | null> {
+    async findChildByIdParent(idParent: Types.ObjectId): Promise<ScenarioItemsDoc | null> {
         try {
-            const item = await ScenarioItems.findById(idParent);
-            return await ScenarioItems.findOne({uuid: item?.uuid})
+            const parentScenarioItem = await ScenarioItems.findById(idParent);
+            return await ScenarioItems.findOne({uuid: parentScenarioItem?.children[0]})
         } catch (error) {
             throw `error in findScenarioItemByUuid ${error}`
         }

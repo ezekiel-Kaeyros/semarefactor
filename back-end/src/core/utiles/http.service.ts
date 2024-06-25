@@ -24,6 +24,7 @@ class HttpService {
   ): Promise<AxiosResponse<T>> {
     const config = this.getAxiosConfig(token);
     config.params = params;
+    console.log('http get request to ', url);
     return axios.get<T>(url, config);
   }
 
@@ -34,6 +35,7 @@ class HttpService {
   ): Promise<AxiosResponse<T>> {
     const config = this.getAxiosConfig(token);
     try {
+      console.log('http post request to ', url);
       return await axios.post<T>(url, data, config);
     } catch (error) {
       if (axios.isAxiosError(error)) {

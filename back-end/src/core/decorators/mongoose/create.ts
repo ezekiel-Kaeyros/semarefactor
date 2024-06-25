@@ -7,14 +7,30 @@ export function MongoCreate(model: Model<any>) {
 
         descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
             try {
-                const document = new model({
-                    _id: new mongoose.Types.ObjectId(),
-                    ...req.body
-                });
+                if (Array.isArray(req.body)) {
+                    let arr: any= []
+                    for await (const element of req.body) {
+                        console.log(element);
+                        let res= await model.create(element)
+                       console.log(res);
+                       
+                       arr.push(res)
+                      }
+                    
+                    req.mongoCreate = arr;
+                    
+                }else{
+                    const document = new model({
+                        _id: new mongoose.Types.ObjectId(),
+                        ...req.body
+                    });
+    
+                    await document.save();
+                    req.mongoCreate = document;
+                }
+                
 
-                await document.save();
-
-                req.mongoCreate = document;
+               
             } catch (error) {
                 // logging.error(error);
 

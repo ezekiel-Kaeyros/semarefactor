@@ -12,7 +12,8 @@ class ChatService {
     public async createChatInSession(chatData: ChatModel, phoneNumber: string) {
         try {
             const isSessionValid = await sessionService.sessionIsValid(chatData.conversation_id.toString());
-    
+            await chatRepository.create(chatData);
+
             if (!isSessionValid) {
                 const body = WhatsappHelperMethode.bodyBotMessage({type: "text", message: StandardMessageEnum.INACTIVE_SESSION, recipientPhone: phoneNumber });
                 await chatRepository.create({
@@ -25,8 +26,7 @@ class ChatService {
             }
 
             const body = WhatsappHelperMethode.bodyBotMessage({type: "text", message: chatData.text!, recipientPhone: phoneNumber });
-            await chatRepository.create(chatData);
-            return body ;
+            return body;
         } catch (error) {
             console.error('Error creating chat in session:', error);
             throw new Error('Unable to create chat in session');

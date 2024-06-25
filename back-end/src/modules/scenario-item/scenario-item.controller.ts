@@ -28,7 +28,17 @@ class ScenarioItemController {
     @Route('post', '/create')
     @MongoCreate(ScenarioItems)
     create(req: Request, res: Response, next: NextFunction) {
-        Scenario.findByIdAndUpdate(req.body.scenario_id, { $push: { 'scenario_items_id': req.mongoCreate?._id } }).exec();
+        
+        if (Array.isArray(req.mongoCreate)) {
+            req.mongoCreate.forEach((element) => {
+                
+                Scenario.findByIdAndUpdate(req.body.scenario_id, { $push: { 'scenario_items_id': element._id } }).exec();
+            });
+
+        }else{
+          Scenario.findByIdAndUpdate(req.body.scenario_id, { $push: { 'scenario_items_id': req.mongoCreate?._id } }).exec();
+         
+        }
         return res.status(201).json(req.mongoCreate);
     }
     @Route('post', '/query')

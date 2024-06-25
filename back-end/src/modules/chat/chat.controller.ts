@@ -60,7 +60,7 @@ class ChatController {
                 { conversation_id, text, origin: ChatOrigin.ADMIN, is_read: true }, phone_number
             );
             
-            await chatService.sendWhatsappMessage(result, phone_number_id, phone_number);
+            await chatService.sendWhatsappMessage(result, phone_number_id, token);
             return res.status(201).json(result);
         } catch (error) {
             next(error);
