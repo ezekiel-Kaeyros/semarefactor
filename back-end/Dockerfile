@@ -1,5 +1,5 @@
 
-# Use Node 20.9.0-alpine as parent image
+# Use Node 20.9.0-alpine as parent images
 FROM node:20.9.0-alpine AS BUILD_IMAGE
 
 # Change the working directory on the Docker image to /app
