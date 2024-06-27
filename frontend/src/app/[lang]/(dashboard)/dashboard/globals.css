@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'visby-regular';
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #676767;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+h1 {
+  font-family: visby-bold;
+}
+
+@font-face {
+  font-family: 'articulat';
+  src: url('../../../../../public/fonts/Articulat/ArticulatCF-Regular.otf');
+  font-weight: normal;
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: 'visby-bold';
+  src: url('../../../../../public/fonts/Visby/VisbyCF-Bold.otf');
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: 'visby-medium';
+  src: url('../../../../../public/fonts/Visby/VisbyCF-Medium.otf');
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: 'visby-regular';
+  src: url('../../../../../public/fonts/Visby/VisbyCF-Regular.otf');
+
+  /* Add additional formats if needed */
+}
+@font-face {
+  font-family: 'VisbyCF-light';
+  src: url('../../../../../public/fonts/Visby/VisbyCF-Regular.otf');
+
+  /* Add additional formats if needed */
+}
+.react-flow__controls-button {
+  /* border: none; */
+  background: #2b2e31 !important;
+  border-bottom: none !important;
+  box-sizing: content-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px !important;
+  height: 25px !important;
+  border-radius: 5px !important ;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  padding: 5px;
+}
+.react-flow__controls svg {
+  fill: #ffffff !important; /* Change to your desired color */
+}
+.react-flow__panel.right {
+  right: 50px !important;
+}
+
+.react-flow__panel.bottom {
+  bottom: 30px !important;
+}
+.react-flow__attribution {
+  display: none !important;
+}
+.react-flow__controls-interactive {
+  display: none !important;
+}
+.react-flow__controls-fitview {
+  order: 1 !important;
+}
+.react-flow__controls-zoomout {
+  order: 3 !important;
+}
+.react-flow__controls-zoomin {
+  order: 2 !important;
+}
+textarea {
+  resize: none;
+}
+.bg-default-100 {
+  background-color: transparent !important;
+}

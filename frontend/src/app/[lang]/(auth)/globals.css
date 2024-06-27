@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "articulat";
+  src: url("../../../../public/fonts/Articulat/ArticulatCF-Regular.otf"); 
+  font-weight: normal;
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: "visby-bold";
+  src: url("../../../../public/fonts/Visby/VisbyCF-Bold.otf"); 
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: "visby-medium";
+  src: url("../../../../public/fonts/Visby/VisbyCF-Medium.otf"); 
+
+  /* Add additional formats if needed */
+}
+
+@font-face {
+  font-family: "visby-regular";
+  src: url("../../../../public/fonts/Visby/VisbyCF-Regular.otf");
+
+  /* Add additional formats if needed */
+}
+@font-face {
+  font-family: "VisbyCF-light";
+  src: url("../../../../public/fonts/Visby/VisbyCF-Regular.otf");
+
+  /* Add additional formats if needed */
+}
+body {
+
+  font-family: "visby-regular";
+}

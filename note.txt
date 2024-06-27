@@ -1,0 +1,9 @@
+Introduce catalog (not in the scenario builder) 28.06.2024
+Introduce booking (in the scenario builder) 28.06.2024
+Introduce catalog --> Catalog builder to be done in V2. For now catalog will be added manually
+
+
+
+
+es que il ya un lien entre la duree du service et le choix de l heure?
+les plages horaires sont t elle organise en type (weekend , semaine)?

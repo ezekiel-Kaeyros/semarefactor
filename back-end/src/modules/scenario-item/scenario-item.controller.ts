@@ -27,13 +27,13 @@ class ScenarioItemController {
     }
     @Route('post', '/create')
     @MongoCreate(ScenarioItems)
-    create(req: Request, res: Response, next: NextFunction) {
+    async create(req: Request, res: Response, next: NextFunction) {
         
         if (Array.isArray(req.mongoCreate)) {
-            req.mongoCreate.forEach((element) => {
-                
-                Scenario.findByIdAndUpdate(req.body.scenario_id, { $push: { 'scenario_items_id': element._id } }).exec();
-            });
+            for await (const elt of req.mongoCreate) {
+               Scenario.findByIdAndUpdate(req.body[0].scenario_id, { $push: { 'scenario_items_id': elt._id } }).exec();
+               
+            }
 
         }else{
           Scenario.findByIdAndUpdate(req.body.scenario_id, { $push: { 'scenario_items_id': req.mongoCreate?._id } }).exec();

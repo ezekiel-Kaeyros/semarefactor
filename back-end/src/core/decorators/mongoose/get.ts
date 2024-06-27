@@ -7,6 +7,8 @@ export function MongoGet(model: Model<any>, populate?: string[]) {
 
         descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
             try {
+                console.log('populate==========>', populate);
+                
                 const document = await model
                 .findById(req.params.id)
                 .populate(populate || [])

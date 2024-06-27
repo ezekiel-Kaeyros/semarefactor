@@ -2,10 +2,6 @@ import { title } from "process";
 import { ScenarioItemsDoc } from "../modeles/scenario-item.model";
 import { ButtonContent, IWhatsappRequestData, SendWAButtonModel, SendWACatalogModel, SendWAImageModel, SendWAListModel, SendWAMessageModel, SendWAProductsTemplateModel, SendWATextModel, WAButtons, WACatalog, WAImage, WAList, WARecipient, WATemplate, WAText } from "../modeles/whatsapp.model";
 import { TypeSendWhatsappMessage, TypeWhatsappMessage } from "../enums/scenario.enum";
-import { SessionDoc } from "../modeles/session.model";
-import { chatRepository } from "../../modules/chat/chat.repository";
-import { ChatOrigin } from "../enums/message.enum";
-import { CredentialsDoc } from "../modeles/credential.model";
 import { StandardMessageEnum } from "../enums/message.enum";
 
 export class WhatsappHelperMethode {
@@ -293,28 +289,5 @@ export class WhatsappHelperMethode {
         }).join('');
 
         return `${text}\n${button}:\n${formattedSections}`;
-    }
-
-    public static async formatRapport(session: SessionDoc, credential: CredentialsDoc): Promise<string> {
-        const chatFlows = session.chat_flow ?? [];
-        const messages: string[] = [];
-    
-        for (const chatFlow of chatFlows) {
-            if (chatFlow.to_display) {
-                try {
-                    const chat = await chatRepository.getById(chatFlow.chatId);
-                    if (chat) {
-                        const sender = chat.origin === ChatOrigin.USER ? 'Moi: ' : `${credential.company}: `;
-                        const text = chat.text ?? '';
-                        const url = chat.url ?? '';
-                        messages.push(`${sender}${text}\n${url}`);
-                    }
-                } catch (error) {
-                    console.error(`Error fetching chat with ID ${chatFlow.chatId}:`, error);
-                }
-            }
-        }
-    
-        return messages.join('\n');
     }
 }

@@ -96,18 +96,19 @@ class WebhookService {
         // save user message in db
         const contentChat = WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
         if (whatsappRequestData.type === TypeWhatsappMessage.IMAGE && this.imageUrl) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, undefined, this.imageUrl,  this.session!);
+          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, undefined, this.imageUrl);
         }
 
         if (whatsappRequestData.type !== TypeWhatsappMessage.IMAGE && contentChat) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, contentChat, undefined,  this.session!);
+          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, contentChat, undefined);
         }
+        
 
         // save bot message in db
         const contentMessage = WhatsappHelperMethode.getContentWhasappSendMessage(body);
         const contentText2 = body.type === TypeWhatsappMessage.IMAGE ? undefined : contentMessage;
         const contentUrl2 = whatsappRequestData.type === TypeWhatsappMessage.IMAGE ? contentMessage : undefined;
-        await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.BOT, contentText2, contentUrl2, this.session!);
+        await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.BOT, contentText2, contentUrl2);
         
       } catch (error) {
         throw error;
@@ -190,13 +191,11 @@ class WebhookService {
       }
       
       if (scenarioItem.children.length === 0) {
-        this.session = await sessionRepository.updateSession(this.session?.id!, { is_active: false });
-        const rapport = await WhatsappHelperMethode.formatRapport(this.session!, this.credential!);
-
+        await sessionRepository.updateSession(this.session?.id!, { is_active: false });
         return WhatsappHelperMethode.bodyBotMessage({
           type: 'text',
           recipientPhone: phoneNumber,
-          message: StandardMessageEnum.END_SCENARIO + rapport
+          message: StandardMessageEnum.END_SCENARIO
         });
       }
   

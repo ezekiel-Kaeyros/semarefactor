@@ -17,7 +17,7 @@ const userSchema = new Schema<UserDoc>(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Ajoute automatiquement les champs createdAt et updatedAt
   }
 );
 

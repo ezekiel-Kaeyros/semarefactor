@@ -13,7 +13,7 @@ import { getByCredential } from '../../core/decorators/mongoose/getByCredential'
 @Controller('/scenario')
 class ScenarioController {
    @Route('get', '/')
-   @MongoGetAll(Scenario)
+   @MongoGetAll(Scenario, ['scenario_items_id'])
    getAll(req: Request, res: Response, next: NextFunction) {
         return res.status(200).json(req.mongoGetAll);
     }
