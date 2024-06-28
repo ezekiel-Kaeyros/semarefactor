@@ -21,6 +21,12 @@ import ScenarioItemController from './modules/scenario-item/scenario-item.contro
 import TemplateScenariosController from './modules/template-scenario/template-scenario.contoller';
 import ChatController from './modules/chat/chat.controller';
 import UserController from './modules/user/user.controller';
+import CalendarController from './modules/calendar/calendar.controller';
+import BookingController from './modules/booking/booking.controller';
+import CategoryBookingController from './modules/category-booking/category-booking.controller';
+import ServiceBookingController from './modules/service-booking/service-booking.controller';
+import CompanyHourServiceController from './modules/company-hour-service/company-hour-service.controller';
+import CompanyCreneauController from './modules/company-creneau/company-creneau.controller';
 
 dotenv.config();
 console.log(process.env.DATABASE_URL_DEV);
@@ -67,7 +73,12 @@ defineRoutes([
   UserSemaController,
   TemplateScenariosController,
   ChatController,
-  UserController
+  UserController,
+  BookingController,
+  CategoryBookingController,
+  ServiceBookingController,
+  CompanyHourServiceController,
+  CompanyCreneauController
 ], app);
 app.use(errorHandler);
 
