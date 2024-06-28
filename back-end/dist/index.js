@@ -27,6 +27,11 @@ const scenario_item_controller_1 = __importDefault(require("./modules/scenario-i
 const template_scenario_contoller_1 = __importDefault(require("./modules/template-scenario/template-scenario.contoller"));
 const chat_controller_1 = __importDefault(require("./modules/chat/chat.controller"));
 const user_controller_1 = __importDefault(require("./modules/user/user.controller"));
+const booking_controller_1 = __importDefault(require("./modules/booking/booking.controller"));
+const category_booking_controller_1 = __importDefault(require("./modules/category-booking/category-booking.controller"));
+const service_booking_controller_1 = __importDefault(require("./modules/service-booking/service-booking.controller"));
+const company_hour_service_controller_1 = __importDefault(require("./modules/company-hour-service/company-hour-service.controller"));
+const company_creneau_controller_1 = __importDefault(require("./modules/company-creneau/company-creneau.controller"));
 dotenv_1.default.config();
 console.log(process.env.DATABASE_URL_DEV);
 (0, connection_1.default)();
@@ -63,7 +68,12 @@ exports.app.use(declareHandler_1.declareHandler);
     usersema_controller_1.default,
     template_scenario_contoller_1.default,
     chat_controller_1.default,
-    user_controller_1.default
+    user_controller_1.default,
+    booking_controller_1.default,
+    category_booking_controller_1.default,
+    service_booking_controller_1.default,
+    company_hour_service_controller_1.default,
+    company_creneau_controller_1.default
 ], exports.app);
 exports.app.use(errorHandler_1.default);
 exports.app.listen(port, () => {

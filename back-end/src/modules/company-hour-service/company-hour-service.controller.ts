@@ -31,7 +31,6 @@ class CompanyHourServiceController{
         const companyHourServiceId = req.params.id as unknown as Types.ObjectId
         const hourservice = await companyHourServiceService.findByCompany(companyHourServiceId)
         res.status(hourservice.status).send(hourservice.message)
-        // return res.status(200).send(req.mongoGet)
     }
 
     @Route('post', '/create')

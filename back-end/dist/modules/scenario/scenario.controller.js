@@ -44,7 +44,7 @@ let ScenarioController = class ScenarioController {
 };
 __decorate([
     (0, route_1.Route)('get', '/'),
-    (0, getAll_1.MongoGetAll)(scenario_schema_1.default)
+    (0, getAll_1.MongoGetAll)(scenario_schema_1.default, ['scenario_items_id'])
 ], ScenarioController.prototype, "getAll", null);
 __decorate([
     (0, route_1.Route)('get', '/:id'),

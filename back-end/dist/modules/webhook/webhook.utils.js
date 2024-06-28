@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.webhookUtils = void 0;
 const chat_repository_1 = require("../chat/chat.repository");
 const conversation_repository_1 = require("../conversation/conversation.repository");
-const session_repository_1 = require("../session/session.repository");
 class WebhookUtils {
     initConversation(phoneNumber, credentialId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,13 +29,11 @@ class WebhookUtils {
         });
     }
     addChatInConversation(conversation_1, origin_1) {
-        return __awaiter(this, arguments, void 0, function* (conversation, origin, text = '', url = '', session) {
-            var _a, _b;
+        return __awaiter(this, arguments, void 0, function* (conversation, origin, text = '', url = '') {
+            var _a;
             try {
                 const chat = yield chat_repository_1.chatRepository.create({ conversation_id: conversation.id, origin: origin, text, url });
-                (_a = session.chat_flow) === null || _a === void 0 ? void 0 : _a.push({ chatId: chat.id, origin });
-                yield session_repository_1.sessionRepository.updateSession(session.id, session);
-                return yield conversation_repository_1.conversationRepository.update(conversation.id, { chat_ids: [...((_b = conversation.chat_ids) !== null && _b !== void 0 ? _b : []), chat.id] });
+                return yield conversation_repository_1.conversationRepository.update(conversation.id, { chat_ids: [...((_a = conversation.chat_ids) !== null && _a !== void 0 ? _a : []), chat.id] });
             }
             catch (error) {
                 throw error;

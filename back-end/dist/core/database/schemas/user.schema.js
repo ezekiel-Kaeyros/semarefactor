@@ -38,7 +38,7 @@ const userSchema = new mongoose_1.Schema({
         default: [],
     },
 }, {
-    timestamps: true,
+    timestamps: true, // Ajoute automatiquement les champs createdAt et updatedAt
 });
 const User = mongoose_1.default.model('users', userSchema);
 exports.default = User;

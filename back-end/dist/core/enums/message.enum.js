@@ -5,7 +5,7 @@ var StandardMessageEnum;
 (function (StandardMessageEnum) {
     StandardMessageEnum["INCORECT_KEYWORD"] = "Mot cl\u00E9 incorrect, vous ne disposez pas du bon mot cl\u00E9 pour participer \u00E0 cette campagne.";
     StandardMessageEnum["INCOMPLTE_SCENARIO"] = "Ce sc\u00E9nario est incomplet";
-    StandardMessageEnum["END_SCENARIO"] = "Merci pour cette echange, ci dessous le resum\u00E9 de notre echange.\n";
+    StandardMessageEnum["END_SCENARIO"] = "Merci pour cette echange, ci dessous le resum\u00E9 de notre echange.\n Coming soon...";
     StandardMessageEnum["INACTIVE_SESSION"] = "Cette session n'est plus en cours.";
     StandardMessageEnum["END_SESSION"] = "Session termin\u00E9.";
 })(StandardMessageEnum || (exports.StandardMessageEnum = StandardMessageEnum = {}));

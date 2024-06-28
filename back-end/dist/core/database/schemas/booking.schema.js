@@ -24,23 +24,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const sessionSchema = new mongoose_1.Schema({
-    current_scenario_item_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'scenarioItems',
-        required: true
-    },
-    conversation_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'conversations',
-    },
-    is_active: {
-        type: Boolean,
-        default: true
-    }
+const bookingSchema = new mongoose_1.Schema({
+    name: { type: String, required: false },
+    status: { type: String, enum: ['open', 'close', 'finish'], required: true, default: 'open' },
+    total_price: { type: Number, required: true },
+    description: { type: String, required: false },
+    startAt: { type: Date, required: true },
+    endAt: { type: Date, required: true },
+    service_booking_id: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "servicebookings", required: true }],
+    conversation_id: { type: mongoose_1.Schema.Types.ObjectId, ref: "conversations", required: true },
 }, {
-    timestamps: true, // Cette option ajoute les champs createdAt et updatedAt
+    timestamps: true,
 });
 // Créer et exporter le modèle Mongoose
-const Session = mongoose_1.default.models.Scenario || mongoose_1.default.model('sessions', sessionSchema);
-exports.default = Session;
+const Booking = mongoose_1.default.models.Booking || mongoose_1.default.model('bookings', bookingSchema);
+exports.default = Booking;

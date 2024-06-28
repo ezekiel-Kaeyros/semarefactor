@@ -1,19 +1,8 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappHelperMethode = void 0;
 const scenario_enum_1 = require("../enums/scenario.enum");
-const chat_repository_1 = require("../../modules/chat/chat.repository");
 const message_enum_1 = require("../enums/message.enum");
-const message_enum_2 = require("../enums/message.enum");
 class WhatsappHelperMethode {
     static formatWhatsappMessage(data) {
         const whatsappRequestData = {
@@ -43,7 +32,7 @@ class WhatsappHelperMethode {
             return WhatsappHelperMethode.bodyBotMessage({
                 type: 'text',
                 recipientPhone: phone_number,
-                message: message_enum_2.StandardMessageEnum.INCOMPLTE_SCENARIO
+                message: message_enum_1.StandardMessageEnum.INCOMPLTE_SCENARIO
             });
         }
         switch (scenarioItem.type) {
@@ -277,30 +266,6 @@ class WhatsappHelperMethode {
             return `${section.title}\n  ${rows}`;
         }).join('');
         return `${text}\n${button}:\n${formattedSections}`;
-    }
-    static formatRapport(session, credential) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c;
-            const chatFlows = (_a = session.chat_flow) !== null && _a !== void 0 ? _a : [];
-            const messages = [];
-            for (const chatFlow of chatFlows) {
-                if (chatFlow.to_display) {
-                    try {
-                        const chat = yield chat_repository_1.chatRepository.getById(chatFlow.chatId);
-                        if (chat) {
-                            const sender = chat.origin === message_enum_1.ChatOrigin.USER ? 'Moi: ' : `${credential.company}: `;
-                            const text = (_b = chat.text) !== null && _b !== void 0 ? _b : '';
-                            const url = (_c = chat.url) !== null && _c !== void 0 ? _c : '';
-                            messages.push(`${sender}${text}\n${url}`);
-                        }
-                    }
-                    catch (error) {
-                        console.error(`Error fetching chat with ID ${chatFlow.chatId}:`, error);
-                    }
-                }
-            }
-            return messages.join('\n');
-        });
     }
 }
 exports.WhatsappHelperMethode = WhatsappHelperMethode;

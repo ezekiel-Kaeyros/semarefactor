@@ -24,23 +24,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const sessionSchema = new mongoose_1.Schema({
-    current_scenario_item_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'scenarioItems',
-        required: true
-    },
-    conversation_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'conversations',
-    },
-    is_active: {
-        type: Boolean,
-        default: true
-    }
+const companyCreneauSchema = new mongoose_1.Schema({
+    duration: { type: Number, required: true },
+    company_id: { type: mongoose_1.Schema.Types.ObjectId, ref: "credentials", required: true },
 }, {
-    timestamps: true, // Cette option ajoute les champs createdAt et updatedAt
+    timestamps: true,
 });
 // Créer et exporter le modèle Mongoose
-const Session = mongoose_1.default.models.Scenario || mongoose_1.default.model('sessions', sessionSchema);
-exports.default = Session;
+const CompanyCreneau = mongoose_1.default.models.CompanyHourService || mongoose_1.default.model('companycreneau', companyCreneauSchema);
+exports.default = CompanyCreneau;

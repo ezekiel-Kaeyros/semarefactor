@@ -94,16 +94,16 @@ class WebhookService {
                 // save user message in db
                 const contentChat = whatsapp_helper_method_1.WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
                 if (whatsappRequestData.type === scenario_enum_1.TypeWhatsappMessage.IMAGE && this.imageUrl) {
-                    this.conversation = yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.USER, undefined, this.imageUrl, this.session);
+                    this.conversation = yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.USER, undefined, this.imageUrl);
                 }
                 if (whatsappRequestData.type !== scenario_enum_1.TypeWhatsappMessage.IMAGE && contentChat) {
-                    this.conversation = yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.USER, contentChat, undefined, this.session);
+                    this.conversation = yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.USER, contentChat, undefined);
                 }
                 // save bot message in db
                 const contentMessage = whatsapp_helper_method_1.WhatsappHelperMethode.getContentWhasappSendMessage(body);
                 const contentText2 = body.type === scenario_enum_1.TypeWhatsappMessage.IMAGE ? undefined : contentMessage;
                 const contentUrl2 = whatsappRequestData.type === scenario_enum_1.TypeWhatsappMessage.IMAGE ? contentMessage : undefined;
-                yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.BOT, contentText2, contentUrl2, this.session);
+                yield webhook_utils_1.webhookUtils.addChatInConversation(this.conversation, message_enum_1.ChatOrigin.BOT, contentText2, contentUrl2);
             }
             catch (error) {
                 throw error;
@@ -188,12 +188,11 @@ class WebhookService {
                 });
             }
             if (scenarioItem.children.length === 0) {
-                this.session = yield session_repository_1.sessionRepository.updateSession((_a = this.session) === null || _a === void 0 ? void 0 : _a.id, { is_active: false });
-                const rapport = yield whatsapp_helper_method_1.WhatsappHelperMethode.formatRapport(this.session, this.credential);
+                yield session_repository_1.sessionRepository.updateSession((_a = this.session) === null || _a === void 0 ? void 0 : _a.id, { is_active: false });
                 return whatsapp_helper_method_1.WhatsappHelperMethode.bodyBotMessage({
                     type: 'text',
                     recipientPhone: phoneNumber,
-                    message: message_enum_1.StandardMessageEnum.END_SCENARIO + rapport
+                    message: message_enum_1.StandardMessageEnum.END_SCENARIO
                 });
             }
             const updatedScenarioItem = yield scenario_repository_1.scenarioRepository.findScenarioItemWithChildren(scenarioItem);

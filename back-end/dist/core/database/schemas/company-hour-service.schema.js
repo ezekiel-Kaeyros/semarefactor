@@ -24,23 +24,26 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const sessionSchema = new mongoose_1.Schema({
-    current_scenario_item_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'scenarioItems',
-        required: true
-    },
-    conversation_id: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'conversations',
-    },
-    is_active: {
-        type: Boolean,
-        default: true
-    }
+const companyHourServiceSchema = new mongoose_1.Schema({
+    day: { type: String, enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], required: true },
+    openingTime: { type: String, required: true, validate: {
+            validator: function (v) {
+                // Regex pour vérifier le format HH:mm (24 heures)
+                return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
+            },
+            message: props => `${props.value} is not a valid time format! Use HH:mm.`
+        } },
+    closeTime: { type: String, required: true, validate: {
+            validator: function (v) {
+                // Regex pour vérifier le format HH:mm (24 heures)
+                return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
+            },
+            message: props => `${props.value} is not a valid time format! Use HH:mm.`
+        } },
+    company_id: { type: mongoose_1.Schema.Types.ObjectId, ref: "credentials", required: true },
 }, {
-    timestamps: true, // Cette option ajoute les champs createdAt et updatedAt
+    timestamps: true,
 });
 // Créer et exporter le modèle Mongoose
-const Session = mongoose_1.default.models.Scenario || mongoose_1.default.model('sessions', sessionSchema);
-exports.default = Session;
+const CompanyHourService = mongoose_1.default.models.CompanyHourService || mongoose_1.default.model('companyhourservices', companyHourServiceSchema);
+exports.default = CompanyHourService;

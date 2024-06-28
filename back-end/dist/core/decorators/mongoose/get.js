@@ -16,6 +16,7 @@ function MongoGet(model, populate) {
         descriptor.value = function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
+                    console.log('populate==========>', populate);
                     const document = yield model
                         .findById(req.params.id)
                         .populate(populate || []);
