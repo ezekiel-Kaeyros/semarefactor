@@ -26,8 +26,13 @@ class WebhookService {
     private conversation?: ConversationDoc | null;
     private imageUrl?: string;
   
-    public async init(phoneNumberId: string, phoneNumber: string): Promise<void> {
-      this.credential = await credentialsRepository.getCredentailByPhoneNumberId(phoneNumberId);
+    public async init(phoneNumberId: string, phoneNumber: string): Promise<void | any> {
+      const datacredential = await credentialsRepository.getCredentailByPhoneNumberId(phoneNumberId);
+      if(datacredential === false) {
+        return datacredential;
+      }
+      
+      this.credential = datacredential as CredentialsDoc;
       this.conversation = await webhookUtils.initConversation(phoneNumber, this.credential.id);
       this.session = await sessionRepository.getMostRecentActiveSession(this.conversation.id);
     }
@@ -96,19 +101,18 @@ class WebhookService {
         // save user message in db
         const contentChat = WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
         if (whatsappRequestData.type === TypeWhatsappMessage.IMAGE && this.imageUrl) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, undefined, this.imageUrl);
+          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, undefined, this.imageUrl,  this.session!);
         }
 
         if (whatsappRequestData.type !== TypeWhatsappMessage.IMAGE && contentChat) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, contentChat, undefined);
+          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, contentChat, undefined,  this.session!);
         }
-        
 
         // save bot message in db
         const contentMessage = WhatsappHelperMethode.getContentWhasappSendMessage(body);
         const contentText2 = body.type === TypeWhatsappMessage.IMAGE ? undefined : contentMessage;
         const contentUrl2 = whatsappRequestData.type === TypeWhatsappMessage.IMAGE ? contentMessage : undefined;
-        await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.BOT, contentText2, contentUrl2);
+        await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.BOT, contentText2, contentUrl2, this.session!);
         
       } catch (error) {
         throw error;
@@ -191,11 +195,13 @@ class WebhookService {
       }
       
       if (scenarioItem.children.length === 0) {
-        await sessionRepository.updateSession(this.session?.id!, { is_active: false });
+        this.session = await sessionRepository.updateSession(this.session?.id!, { is_active: false });
+        const rapport = await WhatsappHelperMethode.formatRapport(this.session!, this.credential!);
+
         return WhatsappHelperMethode.bodyBotMessage({
           type: 'text',
           recipientPhone: phoneNumber,
-          message: StandardMessageEnum.END_SCENARIO
+          message: StandardMessageEnum.END_SCENARIO + rapport
         });
       }
   

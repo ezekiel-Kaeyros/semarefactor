@@ -48,7 +48,10 @@ class WebhookController {
             const whatsappRequestData: IWhatsappRequestData = WhatsappHelperMethode.formatWhatsappMessage(body);
             
             // Init service
-            await webhookService.init(whatsappRequestData.phone_number_id, whatsappRequestData.phone_number);
+            const hasError = await webhookService.init(whatsappRequestData.phone_number_id, whatsappRequestData.phone_number);
+            if (hasError === false) {
+                return res.status(200).send({});   
+            }
 
             // Check if bot is not active
             if (await webhookService.botIsNotActive(whatsappRequestData)) {

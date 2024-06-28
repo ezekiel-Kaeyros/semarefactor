@@ -15,8 +15,22 @@ const sessionSchema = new Schema<SessionDoc>(
         is_active: {
             type: Boolean,
             default: true
-        }
-    
+        },
+        chat_flow: [{
+            to_display: {
+                type: Boolean,
+                required: false,
+                default: true
+            },
+            chatId: {
+                type: Schema.Types.ObjectId,
+                required: false
+            },
+            origin: {
+                type: String,
+                required: false
+            }
+        }],
     },
     {
         timestamps: true, // Cette option ajoute les champs createdAt et updatedAt

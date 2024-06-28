@@ -10,18 +10,19 @@ class CredentialsRepository {
         return credentials;
     }
 
-    async getCredentailByPhoneNumberId(phone_number_id: string): Promise<CredentialsDoc> {
+    async getCredentailByPhoneNumberId(phone_number_id: string): Promise<CredentialsDoc | boolean> {
         try {
             const credentials = await Credentials.findOne({phone_number_id});
 
             if (!credentials) {
-                throw new Error('Credential not found');
+                console.log('credential not found');
+                return false;
             }
 
             return credentials;
         } catch (error) {
             console.error('Error retrieving the credential by phone_number_id:', error);
-            throw error;
+            return false;
         }
         
     }
