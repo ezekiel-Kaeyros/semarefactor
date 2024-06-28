@@ -19,6 +19,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { useChatBot } from '@/app/hooks/useChatBot';
 import { useAuth } from '@/app/hooks/useAuth';
+import { API_URL } from '@/services';
 
 export const optionsConversation = [
   // {
@@ -107,7 +108,7 @@ const ConversationFilter: React.FC<StatusFitlerProps> = ({
       );
   }, [conversation]);
 
-  const API_STATUS_URL = 'https://backrefa.sem-a.com/conversation/update/';
+  const API_STATUS_URL = API_URL+'/conversation/update/';
 
   const handleStatusChange = (status: string | any, color: string) => {
     onStatusChange(status);

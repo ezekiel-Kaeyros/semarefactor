@@ -1,10 +1,9 @@
 import { getUserCookies } from '@/cookies/cookies';
 import axios from 'axios';
 
-const API_URL = "https://backrefa.sem-a.com";
-  // 'https://6r10kf27nk.execute-api.eu-central-1.amazonaws.com/prod/product/100609346426084';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// 'https://6r10kf27nk.execute-api.eu-central-1.amazonaws.com/prod/product/100609346426084';
 // const API_URL = 'https://k8wmg6ma27.execute-api.eu-central-1.amazonaws.com'
-// const API_URL='http://localhost:3000';
 const user = getUserCookies();
 export default class DataService {
   client: any;

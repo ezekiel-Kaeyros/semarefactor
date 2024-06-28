@@ -54,7 +54,6 @@ const ChatUI = ({ id }: { id: string | number }) => {
       const response = await new ChatbotService().loadChatsConversation(data ? data : {
         conversation_id: selectedChat ? selectedChat._id : '',
       });
-      setRefresh(false);
          dispatch(addAllonversation({ id: id.toString(), chats: response.data }));
 
       return response.data;
@@ -71,20 +70,23 @@ const ChatUI = ({ id }: { id: string | number }) => {
   });
 
   useEffect(() => {
-    if (conversation.length > 0 && allConversation.filter((item)=>item.id==id.toString()).length==0) {
+    if (
+      conversation.length > 0 &&
+      allConversation.filter((item) => item.id == id.toString()).length == 0 &&
+      !refresh
+    ) {
       setSelectChat(
         conversation?.find(
           (chat) => chat.phone_number.toString() === id.toString()
         )
       );
 
-      if ((!data && !isLoading) || refresh) {
+      if (!data && !isLoading) {
         console.log('refresh');
 
         loadChatsByCompany().then((result) => {
           console.log(result, 'chattt');
           setChat(result);
-
         });
       }
       if (data) {
@@ -92,18 +94,28 @@ const ChatUI = ({ id }: { id: string | number }) => {
 
         setChat(data);
       }
-      console.log('data',data);
-      
+      console.log('data', data);
     }
    if (
      conversation.length > 0 &&
-     allConversation.filter((item) => item.id == id.toString()).length > 0
+     allConversation.filter((item) => item.id == id.toString()).length > 0 && !refresh
    ) {
      console.log('allConversation',allConversation);
      
      setChat(allConversation[0].chats)
    }
 
+      if (conversation.length > 0 && refresh) {
+        console.log('refresh');
+
+        loadChatsByCompany().then((result) => {
+          console.log(refresh, 'refresh');
+          console.log(result, 'result');
+          setChat(result);
+      setRefresh(false);
+
+        });
+      }
   }, [conversation, refresh, data, isLoading,allConversation]);
 
 

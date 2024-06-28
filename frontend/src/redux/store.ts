@@ -20,6 +20,7 @@ import setRealTimeStausArr from './features/chat-bot-slice';
 import setSelectedStatus from './features/chat-bot-slice';
 import setCompanyId from './features/chat-bot-slice';
 import setLoadingStatus from './features/chat-bot-slice';
+import CalendarReducer from './features/calendar';
 // import pointOfSaleViewReducer from './features/create-point-of-sale-slice';
 // import ChannelClusterReducer from './features/channel-cluster-slice';
 // import ActivityReducer from './features/activities-slice';
@@ -46,6 +47,7 @@ export const store = configureStore({
     setSelectedStatus,
     setCompanyId,
     setLoadingStatus,
+    CalendarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 });

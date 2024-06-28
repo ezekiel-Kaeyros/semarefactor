@@ -31,7 +31,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
   const queryClient = useQueryClient();
   async function deletSenario(id: string) {
     const response = await new SenarioService().delete(id);
-    if (response.status === 200) {
+    if (response.status === 201) {
       return response.data;
     } else {
       toast.error('Unable to load all scenarios');

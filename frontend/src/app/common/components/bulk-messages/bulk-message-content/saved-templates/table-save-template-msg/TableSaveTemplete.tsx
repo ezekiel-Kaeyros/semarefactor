@@ -274,20 +274,20 @@ const TableSaveTemplete: React.FC<{ data?: any; delete?: any }> = (props) => {
                   sortDescriptor={sortDescriptor}
                   onSortChange={setSortDescriptor}
                   classNames={{
-                    wrapper: ' bg-[#2B2E31] px-0 py-0 font-[serif]',
-                    thead: 'bg-[#2B2E31] text-red-800 rounded-none xl:text-xl',
-                    tbody: 'w-full',
+                    wrapper: ' bg-[#2B2E31] px-0 py-0 font-[serif] ',
+                    thead: 'bg-[#2B2E31] text-red-800 rounded-none  ',
+                    
                   }}
                   className=""
                 >
                   <TableHeader
                     columns={columns}
-                    className="bg-transparent   text-red-800 hidden"
+                   
                   >
                     {columns.map((row, index) => {
                       return (
                         <TableColumn
-                          className="text-left h-14 bg-[#2B2E31] text-[#CFD4D8] font-semibold xl:text-xl "
+                          className="text-left h-14 bg-[#2B2E31] text-[#CFD4D8] font-semibold "
                           key={index}
                         >
                           {row}
@@ -295,12 +295,12 @@ const TableSaveTemplete: React.FC<{ data?: any; delete?: any }> = (props) => {
                       );
                     })}
                   </TableHeader>
-                  <TableBody items={sortedItems}>
+                  <TableBody items={sortedItems} className="">
                     {sortedItems.map((row, index) => {
                       return (
                         <TableRow
                           key={index}
-                          className="border-t-1  h-14 border-white py-2 xl:text-lg w-full"
+                          className="border-t-1  h-14 border-white py-2 xl:text-lg "
                         >
                           <TableCell className="text-left py-4 flex items-center gap-2">
                             <input
@@ -349,7 +349,7 @@ const TableSaveTemplete: React.FC<{ data?: any; delete?: any }> = (props) => {
                             </label>
                           </TableCell>
 
-                          <TableCell className="text-left py-4 xl:w-96 lg:w-48">
+                          <TableCell className="text-left py-4 w-96">
                             <span
                               className={` py-2 rounded-full xl:text-base md:text-sm text-xs font-bold   bg-white ${
                                 row.status === 'APPROVED' &&
@@ -368,10 +368,10 @@ const TableSaveTemplete: React.FC<{ data?: any; delete?: any }> = (props) => {
                               {row.status}
                             </span>
                           </TableCell>
-                          <TableCell className="text-left py-4 xl:text-lg xl:w-96 lg:w-48">
+                          <TableCell className="text-left py-4 w-72">
                             {row?.language}
                           </TableCell>
-                          <TableCell className="relative flex  items-center xl:gap-5 gap-2 ">
+                          <TableCell className="relative flex  items-center xl:gap-5 gap-2  2xl:w-auto w-48">
                             <Image
                               src={EditIcon}
                               alt="Icon edit"
@@ -461,7 +461,7 @@ const TableSaveTemplete: React.FC<{ data?: any; delete?: any }> = (props) => {
                               }}
                             />
                             <span
-                              className="h-8 w-8  cursor-pointer relative  items-center justify-center bg-[red] border-[red] rounded-lg sm:flex hidden"
+                              className="h-8 w-8  cursor-pointer relative  items-center justify-center bg-[red] border-[red] rounded-lg sm:flex hidden "
                               onMouseEnter={() => {
                                 setInfo(row.name);
                               }}

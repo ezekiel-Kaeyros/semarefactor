@@ -4,7 +4,7 @@ import React from 'react';
 const page = () => {
   return (
     <div className=" h-[80vh] w-full">
-      {/* <CreateMaps /> */}
+      <CreateMaps />
     </div>
   );
 };

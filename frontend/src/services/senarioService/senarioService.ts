@@ -6,8 +6,13 @@ interface ClientNumber {
   numberId: number;
   email: string;
 }
-
-const BASE_URL = 'https://back.chatbot.sem-a.com';
+type ScenarioCreationType = {
+  title: string;
+  type: string;
+  keywords: string[];
+  credential_id: string;
+};
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export class SenarioService extends DataService {
   client: AxiosInstance;
@@ -36,15 +41,32 @@ export class SenarioService extends DataService {
       return error;
     }
   };
-  // TODO: FIX A TOKEN FOR PHONE NUMBER
-  getAllSenarioOfPhoneId = async (params: {
-    token?: string;
-    email: string;
-  }): Promise<{ data: GetSenario[]; status: number }> => {
+  initialCreateScenario = async (
+    data: ScenarioCreationType
+  ): Promise<{ data: any; status: number }> => {
     try {
-      const phone_number_id = getUserCookies().phone_number_id;
+      const response = await this.client.post(
+        BASE_URL + '/scenario/create',
+        data
+      );
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        return response;
+      }
+    } catch (error: any) {
+      return error;
+    }
+  };
+  // TODO: FIX A TOKEN FOR PHONE NUMBER
+  getAllSenarioOfPhoneId = async (): Promise<{
+    data: GetSenario[];
+    status: number;
+  }> => {
+    try {
+      const credentials_id = getUserCookies().credentials._id;
       const response = await this.client.get(
-        BASE_URL + '/scenarios/' + phone_number_id
+        BASE_URL + '/scenario/credentialId/' + credentials_id
       );
       if (response.status === 200) {
         return response;
@@ -59,8 +81,10 @@ export class SenarioService extends DataService {
     id: string
   ): Promise<{ data: GetSenario[]; status: number }> => {
     try {
-      const response = await this.client.delete(BASE_URL + '/delete/' + id);
-      if (response.status === 204) {
+      const response = await this.client.delete(
+        BASE_URL + '/scenario/delete/' + id
+      );
+      if (response.status === 201) {
         return response;
       } else {
         return response;
@@ -73,7 +97,7 @@ export class SenarioService extends DataService {
     id: string | undefined
   ): Promise<{ data: GetSenario; status: number }> => {
     try {
-      const response = await this.client.get(BASE_URL + '/getone/' + id);
+      const response = await this.client.get(BASE_URL + '/scenario/' + id);
       if (response.status === 200) {
         return response;
       } else {
@@ -96,6 +120,43 @@ export class SenarioService extends DataService {
         params.data
       );
       if (response.status === 200) {
+        return response;
+      } else {
+        return response;
+      }
+    } catch (error: any) {
+      return error;
+    }
+  };
+
+  editMainScenario = async (params: {
+    data: any;
+    id: string;
+  }): Promise<{ data: any; status: number }> => {
+    try {
+      const response = await this.client.patch(
+        BASE_URL + '/scenario/update/' + params.id,
+        params.data
+      );
+      if (response.status === 200) {
+        return response;
+      } else {
+        return response;
+      }
+    } catch (error: any) {
+      return error;
+    }
+  };
+
+  createScenarioItem = async (params: {
+    scenario_items: any[];
+  }): Promise<{ data: any; status: number }> => {
+    try {
+      const response = await this.client.post(
+        BASE_URL + '/scenario-item/create',
+        params.scenario_items
+      );
+      if (response.status === 201) {
         return response;
       } else {
         return response;

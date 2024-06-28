@@ -3,6 +3,8 @@ import { CarBoxCreate, CarBoxOptionAndCatalog } from '../components';
 import messageText from '../../../../../../../../public/icons/chatbot/message-text.svg';
 import messageTick from '../../../../../../../../public/icons/chatbot/message-tick.svg';
 import messageQuestion from '../../../../../../../../public/icons/chatbot/message-question.svg';
+import messageQuestionBox from '../../../../../../../../public/icons/scenario/box.svg';
+import messageQuestionList from '../../../../../../../../public/icons/scenario/task-square.svg';
 
 import plusicon from '../../../../../../../../public/icons/chatbot/Plus.svg';
 import preferences from '../../../../../../../../public/icons/chatbot/Preferences.svg';
@@ -18,12 +20,14 @@ import Image from 'next/image';
 import arrowIcon from '../../../../../../../../public/icons/chatbot/arrow-left.svg';
 import chatBotSelectedIcon from '../../../../../../../../public/left_side_bar_icons/headsetUser.png';
 import { isNullOrUndefined } from '@typegoose/typegoose/lib/internal/utils';
+import { Tooltip } from '@nextui-org/react';
 
 interface SideBarProps {
   updateOrCreate: string | undefined;
 }
 function SideBar(props: SideBarProps) {
   const [close, setClose] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
   const { setNameSenario, setKeywordsSenario } = useSenarioCreate();
   const nameSenario = useSenarioCreate((state) => state.nameSenario);
   const keywordsSenario = useSenarioCreate((state) => state.keywords);
@@ -66,100 +70,156 @@ function SideBar(props: SideBarProps) {
         />
         <Image src={chatBotSelectedIcon} alt="arrow" className=" w-7" />
       </div>
+
       <div
         className={`absolute left-0 top-0 h-full overflow-y-scroll scrollbar-hide z-20 py-2 transition-all overflow-hidden ease-in-out duration-500 ${close ? ' w-0 opacity-0' : 'w-72 opacity-1'}`}
       >
         <div
-          className={`  top-14 z-20 flex gap-2 place-items-center ${close ? ' left-0  ' : 'left-80 '} transition-all ease-in-out duration-800 `}
+          className={` gap-3 transition-all ease-in-out duration-300  ${showQuestion ? 'flex flex-col opacity-1' : 'hidden opacity-0'}`}
         >
-          <Image src={arrowIcon} alt="arrow" />
-          <input
-            type="text"
-            className=" text-lg text-white bg-transparent  appearance-none focus:outline-none font-[visby-medium'] font-semibold"
-            defaultValue={nameSenario}
-            ref={nameScenarioRef}
-            onKeyUp={(event) => {
-              const { key } = event;
-              console.log(key);
-              if (key === 'Enter') {
-                if (nameScenarioRef.current) {
-                  nameScenarioRef?.current?.blur();
-                }
-              }
-            }}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setNameSenario(e.target.value)
-            }
-            placeholder="Nom du scenario "
-          />{' '}
-        </div>
-        <p className=" text-xl my-3 font-light ">
-          {props.updateOrCreate && 'Update'}
-        </p>
-        <div className=" flex flex-col gap-3">
+          <div
+            className="flex gap-3 cursor-pointer"
+            onClick={() => setShowQuestion(false)}
+          >
+            <Image src={arrowIcon} alt="arrow" />
+            <p className="text-xl ">Question</p>
+          </div>
           <CarBoxCreate
-            title="Ask a question"
+            title="Question"
             description="Ask question and store user input in variable"
-            color="error-default-light"
+            color="bg-error-default-light"
             icon={<Image src={messageQuestion} alt="" />}
             typeNode="questionNode"
           />
           <CarBoxCreate
-            title="Send a message"
-            description="With no responses required from visitor"
-            color="bg-blue-message-primary"
-            icon={<Image src={messageText} alt="" />}
-            typeNode="messageNode"
+            title="Button"
+            description="Choices based on buttons (Maximum 3)"
+            color="bg-error-default-light"
+            icon={<Image src={messageQuestionBox} alt="" />}
+            typeNode="questionButtonNode"
           />
-
           <CarBoxCreate
-            title="Set conditional"
-            description="Send message based on logical conditions"
-            color="bg-green-emerald"
-            icon={<Image src={messageTick} alt="" />}
-            typeNode="conditionalNode"
+            title="List"
+            description="Choices based on more than 3 buttons (Maximum 15)"
+            color="bg-error-default-light"
+            icon={<Image src={messageQuestionList} alt="" />}
+            typeNode="questionListNode"
           />
         </div>
-        <h1 className=" text-xl my-5  ">Options</h1>
-        <div className=" grid grid-cols-2 gap-3">
-          <CarBoxOptionAndCatalog
-            description="Subscribe to chat"
-            icon={<Image src={subscribe} alt="" />}
-          />
-          <CarBoxOptionAndCatalog
-            description="Unsubscribe to chat"
-            icon={<Image src={unsubcribe} alt="" />}
-          />
-          <CarBoxOptionAndCatalog
-            description="Trigger scenario"
-            icon={<Image src={triggerSenario} alt="" />}
-          />
-          <CarBoxOptionAndCatalog
-            description="Time to delay"
-            icon={<Image src={timeDelay} alt="" />}
-          />
-        </div>
-        <h1 className=" text-xl my-5  ">Catalog</h1>
-        <div className=" grid grid-cols-2 gap-3">
-          <CarBoxOptionAndCatalog
-            description="Product Sets"
-            icon={<Image src={preferences} alt="" />}
-          />
-          <CarBoxOptionAndCatalog
-            description=" Single Product"
-            icon={<Image src={plusicon} alt="" />}
-          />
-        </div>
-        <h1 className=" text-xl my-5  ">Intergrations</h1>
-        <div className=" grid grid-cols-2 gap-3">
-          <CarBoxOptionAndCatalog
-            description="Product Sets"
-            icon={<Image src={momoLogos} alt="" />}
-          />
-          <CarBoxOptionAndCatalog
-            description=" Single Product"
-            icon={<Image src={omLogos} alt="" />}
-          />
+
+        <div
+          className={` ${!showQuestion ? 'flex flex-col opacity-1' : 'hidden opacity-0'}`}
+        >
+          <div
+            className={`  top-14 z-20 flex gap-2 place-items-center ${close ? ' left-0  ' : 'left-80 '} transition-all ease-in-out duration-800 `}
+          >
+            <Image src={arrowIcon} alt="arrow" />
+            <input
+              type="text"
+              className=" text-lg text-white bg-transparent  appearance-none focus:outline-none font-[visby-medium'] font-semibold"
+              defaultValue={nameSenario}
+              ref={nameScenarioRef}
+              onKeyUp={(event) => {
+                const { key } = event;
+                console.log(key);
+                if (key === 'Enter') {
+                  if (nameScenarioRef.current) {
+                    nameScenarioRef?.current?.blur();
+                  }
+                }
+              }}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNameSenario(e.target.value)
+              }
+              placeholder="Nom du scenario "
+            />{' '}
+          </div>
+          <p className=" text-xl my-3 font-light ">
+            {props.updateOrCreate && 'Update'}
+          </p>
+
+          <div className=" flex flex-col gap-3">
+            <Tooltip
+              placement={'right'}
+              content={
+                <div className="px-1 py-2 ">
+                  <div className="text-small font-bold">
+                    Question Types Info
+                  </div>
+                  <div className="text-tiny">
+                    Click to explore the different types of questions.
+                  </div>
+                </div>
+              }
+              offset={-50}
+            >
+              <div onClick={() => setShowQuestion(true)}>
+                <CarBoxCreate
+                  title="Ask a question"
+                  description="Ask question and store user input in variable"
+                  color="bg-error-default-light"
+                  icon={<Image src={messageQuestion} alt="" />}
+                  typeNode="questionNode"
+                />
+              </div>
+            </Tooltip>
+            <CarBoxCreate
+              title="Send a message"
+              description="With no responses required from visitor"
+              color="bg-blue-message-primary"
+              icon={<Image src={messageText} alt="" />}
+              typeNode="messageNode"
+            />
+
+            <CarBoxCreate
+              title="Set conditional"
+              description="Send message based on logical conditions"
+              color="bg-green-emerald"
+              icon={<Image src={messageTick} alt="" />}
+              typeNode="conditionalNode"
+            />
+          </div>
+          <h1 className=" text-xl my-5  ">Options</h1>
+          <div className=" grid grid-cols-2 gap-3">
+            <CarBoxOptionAndCatalog
+              description="Subscribe to chat"
+              icon={<Image src={subscribe} alt="" />}
+            />
+            <CarBoxOptionAndCatalog
+              description="Unsubscribe to chat"
+              icon={<Image src={unsubcribe} alt="" />}
+            />
+            <CarBoxOptionAndCatalog
+              description="Trigger scenario"
+              icon={<Image src={triggerSenario} alt="" />}
+            />
+            <CarBoxOptionAndCatalog
+              description="Time to delay"
+              icon={<Image src={timeDelay} alt="" />}
+            />
+          </div>
+          <h1 className=" text-xl my-5  ">Catalog</h1>
+          <div className=" grid grid-cols-2 gap-3">
+            <CarBoxOptionAndCatalog
+              description="Product Sets"
+              icon={<Image src={preferences} alt="" />}
+            />
+            <CarBoxOptionAndCatalog
+              description=" Single Product"
+              icon={<Image src={plusicon} alt="" />}
+            />
+          </div>
+          <h1 className=" text-xl my-5  ">Intergrations</h1>
+          <div className=" grid grid-cols-2 gap-3">
+            <CarBoxOptionAndCatalog
+              description="Product Sets"
+              icon={<Image src={momoLogos} alt="" />}
+            />
+            <CarBoxOptionAndCatalog
+              description=" Single Product"
+              icon={<Image src={omLogos} alt="" />}
+            />
+          </div>
         </div>
         <div className=" h-28"></div>
       </div>

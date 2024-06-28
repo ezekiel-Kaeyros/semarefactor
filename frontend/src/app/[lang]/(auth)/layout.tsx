@@ -12,8 +12,6 @@ import { ThemeSwitcher } from '@/app/common/dark-mode/theme-switcher/ThemeSwitch
 import Link from 'next/link';
 import NextTopLoader from 'nextjs-toploader';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export default function RootLayout({
   children,
   params: { lang },
@@ -26,7 +24,7 @@ export default function RootLayout({
       <Head>
         <meta name="description">{'Swivy'}</meta>
       </Head>
-      <body className={`${inter.className}  dark:bg-dark `}>
+      <body className={`  dark:bg-dark `}>
         <ReduxProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <Providers>

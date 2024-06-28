@@ -518,11 +518,11 @@ const TableHistoryTemplete: React.FC<{
                                             row.template_name
                                         ),
                                         row.template_name
-                                      ) + ''
+                                      ) + 'sents'
                                     }
                                   </p>
                                 </div>
-                                <div className="flex items-center flex-grow px-5 ">
+                                <div className="flex flex-col items-center flex-grow px-5 ">
                                   <CircularProgress
                                     size="lg"
                                     label="Total success"

@@ -47,6 +47,7 @@ export function middleware(request: NextRequest) {
     `/${locale}/dashboard/setting`,
     `/${locale}/dashboard/tombola-program`,
     `/${locale}/onboarding`,
+    `/${locale}/calendar`,
   ];
 
   const publicPath = [
@@ -56,6 +57,7 @@ export function middleware(request: NextRequest) {
     // `/${locale}/dashboard/bulk-messages`,
     `/${locale}/signup`,
     `/${locale}/verify-code`,
+    `/${locale}/calendar`,
   ];
 
   if (!request.cookies.get('user_dba_data') && !publicPath.includes(pathname)) {

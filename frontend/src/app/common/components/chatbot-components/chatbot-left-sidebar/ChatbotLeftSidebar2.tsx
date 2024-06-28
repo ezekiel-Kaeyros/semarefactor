@@ -50,7 +50,7 @@ const ChatbotLeftSidebar = () => {
   const { setNb } = useNumberConversationsData();
   // const dispatch = useDispatch();
   const { dispatch } = useChatBot();
-   const {user}= useAuth()
+  const { user } = useAuth();
   const { conversation } = useChatBot();
   const [check, setChecked] = useState('');
   const [inputValue, setInputValue] = useState<string>('');
@@ -221,12 +221,12 @@ const ChatbotLeftSidebar = () => {
       </div>
 
       {/* <div className="flex flex-col bg-bgBlackForBtn gap-[1.5rem]  w-full "> */}
-      {/* {!data && (
-             <div className="flex flex-col items-center h-3/4 justify-center">
-               <Image src={EmptyChatboxMessageImg} alt="empty chatbot"></Image>
-               <p className="">No Active message</p>
-             </div>
-           )} */}
+      {filteredItems?.length == 0 && (
+        <div className="flex flex-col items-center h-3/4 justify-center">
+          <Image src={EmptyChatboxMessageImg} alt="empty chatbot"></Image>
+          <p className="">No Active message</p>
+        </div>
+      )}
       <div className="overflow-y-scroll no-scrollbar h-3/4 space-y-2">
         {/* {data && isLoading && (
                <div className="mx-6">

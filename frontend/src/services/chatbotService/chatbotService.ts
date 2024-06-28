@@ -44,7 +44,7 @@ export class ChatbotService extends DataService {
   }): Promise<{ data: any; status: number }> => {
     //  ;
     const response = await this.post(
-      'http://localhost:3000/chat/admin-create',
+      '/chat/admin-create',
       data
     );
     if (response.status === 200) {

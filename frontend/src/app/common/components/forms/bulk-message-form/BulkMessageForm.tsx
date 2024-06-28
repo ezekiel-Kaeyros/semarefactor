@@ -23,6 +23,10 @@ import { postBulkMessageTemplate } from './action';
 import { newSessionImport } from '@/utils/newImportSession';
 import { newUploadToCloudinary } from '@/utils/newCloudinary';
 import { getFileHandler } from '@/utils/getfile';
+import { Select, SelectItem } from '@nextui-org/select';
+import { useQuery } from '@tanstack/react-query';
+import { SenarioService } from '@/services';
+import { isArray } from '@nextui-org/shared-utils';
 // import path from 'path';
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -45,6 +49,21 @@ const BulkMessageForm: React.FC<{ modalHandler?: any }> = (props) => {
   const urlSplit = pathname.split('/');
   const test = async () => {};
 
+  async function getAllSenario() {
+    // const hisEmail = getUserCookies().email;
+    const response = await new SenarioService().getAllSenarioOfPhoneId();
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      toast.error('Unable to load all scenarios');
+      return new Error('Failed to fetch data');
+    }
+  }
+  const {data} = useQuery({
+    queryKey: ['listSenarios'],
+    queryFn: () => getAllSenario(),
+  });
+
   const {
     register,
     handleSubmit,
@@ -56,6 +75,7 @@ const BulkMessageForm: React.FC<{ modalHandler?: any }> = (props) => {
   const { dispatch } = useBolkMessage();
 
   const [btnState, setBtnState] = useState(false);
+  const [btn, setBtn] = useState('');
   const [isLoad, setIsLoad] = useState(false);
 
   const editorRef = useRef<null | HTMLDivElement>(null);
@@ -63,7 +83,10 @@ const BulkMessageForm: React.FC<{ modalHandler?: any }> = (props) => {
   const debouncedValueFooter = useDebounce<string>(tagline, 500);
   const chatContainerRef = useRef<any>(null);
   // ;
-
+  const getIdHandler = (e: any) => {
+    const value = e.target.value;
+    setBtn(value);
+  };
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -136,37 +159,78 @@ const BulkMessageForm: React.FC<{ modalHandler?: any }> = (props) => {
       // // ;
       //  // ;
 
-      const payload = {
-        name: data.name
-          .trim()
-          .toLocaleLowerCase()
-          .replaceAll(
-            /[ .*+?^${}()|[\]\\#@êâôûöïüäëÿ%·`òàùỳèç£&é"'èà/,;:!?./§><-]/gi,
-            '_'
-          ),
-        // language: urlSplit[1].toLocaleLowerCase() == 'en' ? 'en' : 'fr',
-        language: 'fr',
-        body_text: textBodyToSend,
-        footer_text: data.footer_text,
-        image_handle: sessionImportKey,
-        image_url: imageTemplateUrl?.data?.secure_url,
-      };
+      if (!btn) {
+        const payload = {
+          name: data.name
+            .trim()
+            .toLocaleLowerCase()
+            .replaceAll(
+              /[ .*+?^${}()|[\]\\#@êâôûöïüäëÿ%·`òàùỳèç£&é"'èà/,;:!?./§><-]/gi,
+              '_'
+            ),
+          // language: urlSplit[1].toLocaleLowerCase() == 'en' ? 'en' : 'fr',
+          language: 'fr',
+          body_text: textBodyToSend,
+          footer_text: data.footer_text,
+          image_handle: sessionImportKey,
+          image_url: imageTemplateUrl?.data?.secure_url,
+        };
 
-      const response = await postBulkMessageTemplate(payload);
-      // // ;
-      dispatch(refesh(true));
-      reset();
-      setIsLoad(false);
-      toast.success('template enregistré');
-      setTimeout(() => {
-        props.modalHandler();
-      }, 1000);
+        const response = await postBulkMessageTemplate(payload);
+        // // ;
+        dispatch(refesh(true));
+        reset();
+        setIsLoad(false);
+        toast.success('template enregistré');
+        setTimeout(() => {
+          props.modalHandler();
+        }, 1000);
+      } else {
+        const payload = {
+          name: data.name
+            .trim()
+            .toLocaleLowerCase()
+            .replaceAll(
+              /[ .*+?^${}()|[\]\\#@êâôûöïüäëÿ%·`òàùỳèç£&é"'èà/,;:!?./§><-]/gi,
+              '_'
+            ),
+          // language: urlSplit[1].toLocaleLowerCase() == 'en' ? 'en' : 'fr',
+          language: 'fr',
+          body_text: textBodyToSend,
+          footer_text: data.footer_text,
+          image_handle: sessionImportKey,
+          image_url: imageTemplateUrl?.data?.secure_url,
+          buttons: [
+            {
+              type: 'QUICK_REPLY',
+              text: btn,
+            },
+            {
+              type: 'QUICK_REPLY',
+              text: "ça ne m'interesse pas",
+            },
+          ],
+        };
+
+        const response = await postBulkMessageTemplate(payload);
+        // // ;
+        dispatch(refesh(true));
+        reset();
+        setIsLoad(false);
+        toast.success('template enregistré');
+        setBtn('')
+        setTimeout(() => {
+          props.modalHandler();
+        }, 1000);
+      }
+
+      
     } catch (error) {
       // ;
       setIsLoad(false);
       toast.error('une erreur est survenue revenez plus tard');
     }
-  };
+  }
   const getText = (e: any) => {
     setValueText(e.target.value);
   };
@@ -286,6 +350,74 @@ const BulkMessageForm: React.FC<{ modalHandler?: any }> = (props) => {
                 setValueText(text);
               }}
             /> */}
+          </div>
+
+          <div>
+            <span className=" font-bold ">Ajoutez un bouton</span>
+
+            {btn && (
+              <div className="w-full h-[62px] rounded-xl border border-dashed flex items-center justify-between px-10 mt-5">
+                <span>{btn}</span>
+                <span
+                  className="text-xl font-bold cursor-pointer"
+                  onClick={() => !isLoad && setBtn('')}
+                >
+                  x
+                </span>
+              </div>
+            )}
+
+            <Select
+              // color="secondary"
+              size="lg"
+              label="select scenario who joined"
+              placeholder="---"
+              selectionMode="single"
+              className="w-full font-[serif] mt-5"
+              classNames={{
+                trigger: 'border text-white',
+                value: 'text-white sm:text-base text-sm',
+                label: 'text-white sm:text-base text-sm',
+                listboxWrapper: 'font-[serif]',
+              }}
+              onChange={(e: any) => {
+                // ;
+
+                if (e.target.value !== '' && !isLoad) {
+                  getIdHandler(e);
+                }
+              }}
+            >
+              {/* {animals.map((animal) => (
+            <SelectItem key={animal.value} value={animal.value}>
+              {animal.label}
+            </SelectItem>
+          ))} */}
+              {/* {countries.map((item) => {
+            return (
+              <SelectItem
+                key={item.code}
+                value={item.country}
+                // key={item.country}
+              >
+                <span className="flex items-center">
+                  <Image src={item.icon} width={12} height={12} alt="" />
+                  <span className="ml-2">{item.country}</span>
+                </span>
+              </SelectItem>
+            );
+          })} */}
+
+              {data && Array.isArray(data) ? (
+                data.map((item) => {
+                 
+                  return <SelectItem key={item.keywords[0]}>{item.title}</SelectItem>;
+                })
+              ) : (
+                <SelectItem key={1}></SelectItem>
+              )}
+             
+            </Select>
           </div>
 
           <div className="my-2">

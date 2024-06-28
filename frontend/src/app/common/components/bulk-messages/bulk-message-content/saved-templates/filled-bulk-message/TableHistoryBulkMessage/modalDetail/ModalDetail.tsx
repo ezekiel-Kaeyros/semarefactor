@@ -113,6 +113,8 @@ const imprimer=usePdf(refDiv)
   },[])
   useEffect(() => {
     if (props.id !== '') {
+      console.log(props.id);
+      
       try {
         setIsLoad(true);
         setIsError(false);

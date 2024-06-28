@@ -25,8 +25,6 @@ const config: Config = {
         mainWhite: '#ffffff',
         primary: '#0094D9',
         danger: 'red',
-        success: 'red',
-        warning: 'red',
         darkText: '#656B9F',
         grayText: '#C3C7CB',
         blueLine: '#2B45D8',

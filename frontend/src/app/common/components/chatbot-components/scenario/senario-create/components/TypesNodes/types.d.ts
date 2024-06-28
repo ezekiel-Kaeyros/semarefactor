@@ -28,8 +28,10 @@ export type LayoutNodeType = {
   deleteNode?: () => void;
 };
 export type ButtonNodeType = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  title: string;
+  titre: string;
   fc: () => void;
+  conditionDisable?: boolean;
+  errorText?: string;
 };
 
 export type TextNodeType = {

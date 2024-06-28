@@ -5,7 +5,7 @@ import React from 'react';
 const page = ({ params }: { params: { id: string } }) => {
   return (
     <div className=" h-[80vh] w-full">
-      {/* <CreateMaps id={params?.id} /> */}
+      <CreateMaps id={params?.id} />
     </div>
   );
 };

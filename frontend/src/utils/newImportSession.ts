@@ -17,6 +17,7 @@ export const newSessionImport = async (
   );
 
   //   // ;
+console.log(firstResponse);
 
   let uploadSessionId = firstResponse.data.id;
   const data = new FormData();

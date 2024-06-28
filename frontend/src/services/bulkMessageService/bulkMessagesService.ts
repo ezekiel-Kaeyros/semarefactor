@@ -67,8 +67,7 @@ export class BulkMessagesService extends dataServiceBulkmessage {
     const phone_number_id = getUserCookies().credentials.phone_number_id;
 
     const response = await this.get(
-      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/template/' +
-        phone_number_id
+      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/template/100609346426084' 
     );
     return response.data;
   };
@@ -77,8 +76,7 @@ export class BulkMessagesService extends dataServiceBulkmessage {
     const hisEmail = getUserCookies().email;
     const phone_number_id = getUserCookies().credentials.phone_number_id;
     const response = await this.get(
-      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/broadcast-session/' +
-        phone_number_id
+      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/broadcast-session/100609346426084'
     );
     return response.data;
   };
@@ -114,7 +112,9 @@ export class BulkMessagesService extends dataServiceBulkmessage {
   }> => {
     const hisEmail = getUserCookies().email;
     const phone_number_id = getUserCookies().credentials.phone_number_id;
-    return this.get('/broadcast-session/' + phone_number_id + id);
+    return this.get(
+      '/broadcast-session/100609346426084/'+ id
+    );
   };
   getDetailTemplateSession = async (id: string) => {
     const hisEmail = getUserCookies().email;
@@ -122,9 +122,7 @@ export class BulkMessagesService extends dataServiceBulkmessage {
     const phone_number_id = getUserCookies().credentials.phone_number_id;
 
     const response = await this.get(
-      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/broadcast-session/' +
-        phone_number_id +
-        '/' +
+      'https://7ws8gmoso5.execute-api.eu-central-1.amazonaws.com/prod/broadcast-session/100609346426084/' +
         id
     );
     return response.data;

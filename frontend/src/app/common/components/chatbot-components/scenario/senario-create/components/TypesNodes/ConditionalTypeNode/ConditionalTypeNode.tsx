@@ -84,7 +84,7 @@ function ConditionalTypeNode({ data, isConnectable }: QuestionTypeNodeType) {
             {content.map((item) => item.component)}
           </div>
           <div className=" w-full flex flex-wrap  gap-x-1 gap-y-2">
-            <ButtonNode title="Assign variable" fc={addAssignVariableNode} />
+            <ButtonNode titre="Assign variable" fc={addAssignVariableNode} />
           </div>
         </div>
       </LayoutTypesNode>

@@ -325,21 +325,24 @@ console.log(response);
           // color="secondary"
           size="lg"
           label="select template"
-          placeholder="---"
+           placeholder="---"
           selectionMode="single"
           className="max-w-sm font-[serif]"
           classNames={{
             trigger: 'border text-white',
-            value: 'text-white sm:text-base text-sm',
+            value: 'text-white sm:text-base text-sm ',
             label: 'text-white sm:text-base text-sm',
             listboxWrapper: 'font-[serif]',
           }}
+          
+          value={'---'}
           onChange={(e: any) => {
             // ;
 
             if (e.target.value !== '') {
               getIdHandler(e);
             }
+            e.target.value = null;
           }}
         >
           {/* {animals.map((animal) => (
@@ -434,6 +437,23 @@ console.log(response);
           In bulk
         </div>
       </div>
+      {templeteValues.name && (
+        <div className="max-w-sm m-auto h-[62px] rounded-xl border border-dashed flex items-center justify-between px-10 mt-5 my-5">
+          <span>{templeteValues.name}</span>
+          <span
+            className="text-xl font-bold cursor-pointer"
+            onClick={() =>
+              !isLoading &&
+              setTempleteValues({
+                id: '',
+                name: '',
+              })
+            }
+          >
+            x
+          </span>
+        </div>
+      )}
       <div className="flex justify-center">
         <form
           className={`${

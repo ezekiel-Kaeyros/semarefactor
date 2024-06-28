@@ -18,7 +18,7 @@ import { SideBar } from './SideBar/SideBar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   MessageTypeNode,
-  QuestionTypeNode,
+  // QuestionTypeNode,
   ConditionalTypeNode,
 } from './components/TypesNodes';
 import { generateId } from '@/utils/generateId';
@@ -31,11 +31,16 @@ import { SenarioService } from '@/services';
 import { MainModel } from './components/ButtonSave/types';
 import { GetSenario } from '@/services';
 import LoaderSpinner from '@/app/common/ui/loaderSpinner';
+import { InitialModal } from './components/InitialModal/InitialModal';
+import { QuestionButtonTypeNode } from './components/TypesNodes/QuestionButtonTypeNode';
+import { QuestionListTypeNode } from './components/TypesNodes/QuestionListTypeNode';
 
 const nodeTypes = {
   messageNode: MessageTypeNode,
-  questionNode: QuestionTypeNode,
+  questionNode: QuestionButtonTypeNode,
   conditionalNode: ConditionalTypeNode,
+  questionButtonNode: QuestionButtonTypeNode,
+  questionListNode: QuestionListTypeNode,
 };
 interface CreateMapsProps {
   id?: string;
@@ -52,14 +57,16 @@ function CreateMaps(props: CreateMapsProps) {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const scenarioItemsData = useSenarioCreate((state) => state.scenario_items);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance>();
   const { setNameSenario, setKeywordsSenario } = useSenarioCreate();
-  const { setNodesData, setAddNodesData } = useSenarioCreate();
+  const { setNodesData, setAddNodesData, scenario_items } = useSenarioCreate();
   const nameSenario = useSenarioCreate((state) => state.nameSenario);
   // for update
   const [scenarioGetted, setScenarioGetted] = useState<GetSenario>();
   const [loading, setLoading] = useState(false);
+  console.log(edges);
 
   const onConnect = useCallback(
     (params: any) =>
@@ -310,23 +317,25 @@ function CreateMaps(props: CreateMapsProps) {
   async function mainFn() {
     if (props.id) {
       const reponse = await getOneSenario(props.id);
-      if (reponse) {
-        setScenarioGetted(reponse.data);
-        let nodesDataAndEdges = loadScenario(reponse.data?.description);
-        setNameSenario(reponse.data.title);
-        setKeywordsSenario?.(reponse.data.keywords ?? []);
-        setNodesData!(nodesDataAndEdges?.nodeData);
-        setNodes(
-          displayNodeOnCanvas(
-            nodesDataAndEdges.nodeData,
-            nodesDataAndEdges.edges
-          )
-        );
-
-        setEdges(nodesDataAndEdges.edges);
-      }
+      // if (reponse) {
+      //   setScenarioGetted(reponse.data);
+      //   let nodesDataAndEdges = loadScenario(reponse.data?.description);
+      //   setNameSenario(reponse.data.title);
+      //   setKeywordsSenario?.(reponse.data.keywords ?? []);
+      //   setNodesData!(nodesDataAndEdges?.nodeData);
+      //   setNodes(
+      //     displayNodeOnCanvas(
+      //       nodesDataAndEdges.nodeData,
+      //       nodesDataAndEdges.edges
+      //     )
+      //   );
+      //   setEdges(nodesDataAndEdges.edges);
+      // }
     }
   }
+  console.log(edges);
+  console.log(scenario_items, 'scenario_items');
+
   useEffect(() => {
     if (props.id) {
       mainFn();
@@ -345,6 +354,7 @@ function CreateMaps(props: CreateMapsProps) {
       </div>
 
       <SideBar updateOrCreate={props.id} />
+      <InitialModal isUpdate={props.id ? true : false} />
       <ReactFlow
         nodes={nodes}
         edges={edges}

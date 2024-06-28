@@ -24,6 +24,12 @@ jobs:
           echo "DATABASE_URL=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema" >> .env && \
           echo "DATABASE_URL_DEV=mongodb+srv://dba_user:dba_db2024@dba.vt1nhtx.mongodb.net/sema-dev" >> .env && \
           echo "JWT_SECRET=kaeyros_analytics_2024" >> .env
+
+      - name: create .env file for frontend
+        run: |
+          cd frontend && \
+          touch .env && \
+          echo "NEXT_PUBLIC_API_URL=https://backrefa.sem-a.com" >> .env
       - name: Build the Docker image for backend
         run: |
           cd back-end && \
@@ -32,6 +38,15 @@ jobs:
       - name: Push to Dockerhub for backend
         run: |
           docker push ezekielkaeyros/semabackendrefactor:latest
+
+      - name: Build the Docker image for frontend
+        run: |
+          cd frontend && \
+          docker build -t ezekielkaeyros/semafrontendrefactor:latest .
+
+      - name: Push to Dockerhub for frontend
+        run: |
+          docker push ezekielkaeyros/semafrontendrefactor:latest
 
 
 # name: CI Pipeline_staging

@@ -1,4 +1,3 @@
-
 export type MainModel = {
   label: string;
   responses?: MainModel[];
@@ -34,12 +33,12 @@ export type UserSenario = {
 export type GetSenario = {
   _id: string;
   title: string;
-  phone_number_id: string;
-  company: string;
-  description: MainModel[];
-  interactive_labels?: any;
-  times?: number;
-  keywords?: string[];
-  active: false;
-  users: UserSenario[];
+  type: string;
+  keywords: string[];
+  credential_id: string;
+  active: true;
+  scenario_items_id: string[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 };
