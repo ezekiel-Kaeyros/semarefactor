@@ -23,7 +23,7 @@ import {
 } from './components/TypesNodes';
 import { generateId } from '@/utils/generateId';
 import { ButtonSave } from './components';
-import { useSenarioCreate } from '@/zustand_store';
+import { NodeDataType, useSenarioCreate } from '@/zustand_store';
 import Image from 'next/image';
 import arrowIcon from '../../../../../../../public/icons/chatbot/arrow-left.svg';
 import { useQuery } from '@tanstack/react-query';
@@ -45,7 +45,7 @@ const nodeTypes = {
 interface CreateMapsProps {
   id?: string;
 }
-type NodeDataType = {
+type NodeDataTypeLocal = {
   id: string;
   value: any;
   type?: 'response' | 'question';
@@ -60,7 +60,7 @@ function CreateMaps(props: CreateMapsProps) {
   const scenarioItemsData = useSenarioCreate((state) => state.scenario_items);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance>();
-  const { setNameSenario, setKeywordsSenario } = useSenarioCreate();
+  const { setKeywordsSenario, setInitialistionSenario } = useSenarioCreate();
   const { setNodesData, setAddNodesData, scenario_items } = useSenarioCreate();
   const nameSenario = useSenarioCreate((state) => state.nameSenario);
   // for update
@@ -157,66 +157,86 @@ function CreateMaps(props: CreateMapsProps) {
     }
   }
 
+  // create a edge by scenario_items
+  function getByIdScenarioItem(id: string, scenarioItems: NodeDataType[]) {
+    const sce = scenarioItems.find((item) => item.id === id);
+    return sce ?? null;
+  }
   // for update
-  function loadScenario(mainDescription: MainModel[]): {
-    nodeData: NodeDataType[];
-    edges: Edge[];
-  } {
+  function createEdge(scenarioItems: NodeDataType[]): Edge[] {
     let nodesData = new Set();
     let edges = new Set();
 
-    const traverseEdges = (isQuestion: boolean, parentNode: MainModel) => {
-      // start create a node data
-      const parentNodeData: NodeDataType = {
-        id: parentNode?.id ? parentNode?.id : generateId(),
-        value: parentNode.label,
-        type: isQuestion ? 'question' : 'response',
-        link: parentNode.link ? parentNode.link : undefined,
-      };
-      nodesData.add(parentNodeData);
-      if (parentNode?.questions) {
-        for (const child of parentNode.questions) {
-          edges.add({
-            id: generateId(),
-            markerEnd: {
-              type: 'arrow',
-              width: 20,
-              height: 20,
-              color: '#C3C7CB',
-            },
-            source: parentNode.id,
-            sourceHandle: null,
-            style: { strokeWidth: 2, stroke: '#C3C7CB' },
-            target: child.id,
-            targetHandle: null,
-          });
-          traverseEdges(true, child);
+    const generateEdge = (sceneItem: NodeDataType) => {
+      if (sceneItem.children.length > 0 && sceneItem.type === 'button') {
+        for (const childrenId of sceneItem.children) {
+          const child = getByIdScenarioItem(childrenId, scenarioItems);
+          if (child && child.children.length > 0) {
+            edges.add({
+              id: generateId(),
+              markerEnd: {
+                type: 'arrow',
+                width: 20,
+                height: 20,
+                color: '#C3C7CB',
+              },
+              source: sceneItem.id,
+              sourceHandle: childrenId,
+              style: { strokeWidth: 2, stroke: '#C3C7CB' },
+              target: child.children.pop(),
+              targetHandle: null,
+            });
+          }
         }
       }
-      if (parentNode?.responses) {
-        for (const child of parentNode.responses) {
-          edges.add({
-            id: generateId(),
-            markerEnd: {
-              type: 'arrow',
-              width: 20,
-              height: 20,
-              color: '#C3C7CB',
-            },
-            source: parentNode.id,
-            sourceHandle: null,
-            style: { strokeWidth: 2, stroke: '#C3C7CB' },
-            target: child.id,
-            targetHandle: null,
-          });
-          traverseEdges(false, child);
+      if (sceneItem.parents.length > 0) {
+        for (const parentId of sceneItem.parents) {
+          const parent = getByIdScenarioItem(parentId, scenarioItems);
+          if (parent && !(parent.type === 'button')) {
+            const grdParent = getByIdScenarioItem(
+              parent?.parents.pop() ?? '',
+              scenarioItems
+            );
+            if (grdParent && grdParent.type === 'button') {
+              edges.add({
+                id: generateId(),
+                markerEnd: {
+                  type: 'arrow',
+                  width: 20,
+                  height: 20,
+                  color: '#C3C7CB',
+                },
+                source: grdParent.id,
+                sourceHandle: parent?.id,
+                style: { strokeWidth: 2, stroke: '#C3C7CB' },
+                target: sceneItem.id,
+                targetHandle: null,
+              });
+            } else {
+              edges.add({
+                id: generateId(),
+                markerEnd: {
+                  type: 'arrow',
+                  width: 20,
+                  height: 20,
+                  color: '#C3C7CB',
+                },
+                source: parent.id,
+                sourceHandle: null,
+                style: { strokeWidth: 2, stroke: '#C3C7CB' },
+                target: sceneItem.id,
+                targetHandle: null,
+              });
+            }
+          }
         }
       }
     };
-    traverseEdges(true, mainDescription[0]);
-    const finalNodeData = Array.from(nodesData) as NodeDataType[];
+    for (const scenario_it of scenarioItems) {
+      generateEdge(scenario_it);
+    }
     const finalEdge = Array.from(edges) as Edge[];
-    return { nodeData: finalNodeData, edges: finalEdge };
+    return finalEdge;
   }
   /**
    * Funtion to find a start node
@@ -239,7 +259,7 @@ function CreateMaps(props: CreateMapsProps) {
    * @returns Node[]
    */
   function displayNodeOnCanvas(
-    nodeData: NodeDataType[],
+    nodeData: NodeDataTypeLocal[],
     edges: Edge[]
   ): Node[] {
     let nodes = [];
@@ -317,20 +337,28 @@ function CreateMaps(props: CreateMapsProps) {
   async function mainFn() {
     if (props.id) {
       const reponse = await getOneSenario(props.id);
-      // if (reponse) {
-      //   setScenarioGetted(reponse.data);
-      //   let nodesDataAndEdges = loadScenario(reponse.data?.description);
-      //   setNameSenario(reponse.data.title);
-      //   setKeywordsSenario?.(reponse.data.keywords ?? []);
-      //   setNodesData!(nodesDataAndEdges?.nodeData);
-      //   setNodes(
-      //     displayNodeOnCanvas(
-      //       nodesDataAndEdges.nodeData,
-      //       nodesDataAndEdges.edges
-      //     )
-      //   );
-      //   setEdges(nodesDataAndEdges.edges);
-      // }
+      if (reponse) {
+        setKeywordsSenario!(reponse.data.keywords);
+        setInitialistionSenario!({
+          title: reponse.data.title,
+          type: reponse.data.type,
+          _id: reponse.data._id,
+          active: reponse.data.active,
+          credential_id: reponse.data.credential_id,
+          keywords: reponse.data.keywords,
+        });
+        // setScenarioGetted(reponse.data);
+        // let nodesDataAndEdges = loadScenario(reponse.data);
+        // setNameSenario(reponse.data.title);
+        // setKeywordsSenario?.(reponse.data.keywords ?? []);
+        // setNodes(
+        //   displayNodeOnCanvas(
+        //     nodesDataAndEdges.nodeData,
+        //     nodesDataAndEdges.edges
+        //   )
+        // );
+        // setEdges(nodesDataAndEdges.edges);
+      }
     }
   }
   console.log(edges);

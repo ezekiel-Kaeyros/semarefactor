@@ -29,7 +29,7 @@ function SideBar(props: SideBarProps) {
   const [close, setClose] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
   const { setNameSenario, setKeywordsSenario } = useSenarioCreate();
-  const nameSenario = useSenarioCreate((state) => state.nameSenario);
+  const nameSenario = useSenarioCreate((state) => state.title);
   const keywordsSenario = useSenarioCreate((state) => state.keywords);
   const nameScenarioRef = useRef<HTMLInputElement>(null);
 

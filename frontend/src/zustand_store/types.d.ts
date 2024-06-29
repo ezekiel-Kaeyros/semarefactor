@@ -7,6 +7,7 @@ import { Edge, Node } from 'reactflow';
 //   link?: string;
 // };
 export type NodeDataType = {
+  _id?: string;
   id: string;
   label?: string;
   url?: string;
