@@ -56,13 +56,18 @@ class ChatRepository {
     }
 
     async getLastAdminOfConversation(phoneNumber: string, credentialId: string) {
-        const conversation = await conversationRepository.getByPhoneNumberAndCredentialId(phoneNumber, credentialId);
-        if (!conversation || !conversation?.chat_ids) {
-            return null;
+        try {
+            const conversation = await conversationRepository.getByPhoneNumberAndCredentialId(phoneNumber, credentialId);
+            if (!conversation || !conversation?.chat_ids) {
+                throw new Error('chat conversation not found.');
+            }
+            const idLastChat = conversation.chat_ids[conversation.chat_ids.length - 1];
+            const chat = await Chat.findOne({_id: idLastChat, origin: 'admin'});
+            return chat;
+        } catch (error) {
+            throw error
         }
-        const idLastChat = conversation.chat_ids[conversation.chat_ids.length - 1];
-        const chat = await Chat.findOne({_id: idLastChat, origin: 'admin'});
-        return chat;
+        
     }
 }
 

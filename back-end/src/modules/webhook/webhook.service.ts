@@ -21,20 +21,16 @@ import { chatRepository } from '../chat/chat.repository';
 import { HelperMethod } from '../../core/utiles/helper-method';
 
 class WebhookService {
-    private credential?: CredentialsDoc;
-    private session?: SessionDoc | null;
-    private conversation?: ConversationDoc | null;
-    private imageUrl?: string;
-  
-    public async init(phoneNumberId: string, phoneNumber: string): Promise<void | any> {
-      const datacredential = await credentialsRepository.getCredentailByPhoneNumberId(phoneNumberId);
-      if(datacredential === false) {
-        return datacredential;
-      }
-      
-      this.credential = datacredential as CredentialsDoc;
-      this.conversation = await webhookUtils.initConversation(phoneNumber, this.credential.id);
-      this.session = await sessionRepository.getMostRecentActiveSession(this.conversation.id);
+    
+    public async init(phoneNumberId: string, phoneNumber: string) {
+      try {
+        const credential = await credentialsRepository.getCredentailByPhoneNumberId(phoneNumberId);
+        const conversation = await webhookUtils.initConversation(phoneNumber, credential.id);
+        const session = await sessionRepository.getMostRecentActiveSession(conversation.id);
+        return {credential, conversation, session}
+      } catch (error) {
+        throw error
+      }  
     }
   
     public async verifyToken(mode: string, verifyToken: string, challenge: string): Promise<{ status: number, message?: string }> {
@@ -50,207 +46,286 @@ class WebhookService {
       return { status: 403 };
     }
 
-    async killSessionWithKeyword(whatsappRequestData: IWhatsappRequestData): Promise<boolean> {
-        if (whatsappRequestData.type !== TypeWhatsappMessage.TEXT) {
-            return false;
-        }
-
-        if (whatsappRequestData.data.text.body.toLocaleLowerCase().trim() !== StandardKeyWord.KILL_SESSION.toLocaleLowerCase()) {
-            return false;
-        }
-
-        await sessionRepository.updateSession(this.session?.id!, { is_active: false });
-        const body = WhatsappHelperMethode.bodyBotMessage({type: 'text', message: StandardMessageEnum.END_SESSION, recipientPhone: whatsappRequestData.phone_number});
-        try {
-            await HttpService.post<any>(
-                FacebookWebService.SEND_MESSAGE.replace(':phone_number_id', whatsappRequestData.phone_number_id)
-                                               .replace(':token', this.credential?.token!),
-                body
-            );
-            
-            return true;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async botIsNotActive(whatsappRequestData: IWhatsappRequestData): Promise<boolean> {
-        const lastChat = await chatRepository.getLastAdminOfConversation(whatsappRequestData.phone_number, this.credential?.id);
-        if (!lastChat) {
-            return false;
-        }
-
-        const difference = HelperMethod.getDifferenceInMinutes(new Date(lastChat?.updatedAt!));
-        if (difference > TimeValidSession.TIME_STOP_BOT) {
-            return false;
-        }
-
-        return true;
-    }
-  
-    public async handleChatbotProcess(whatsappRequestData: IWhatsappRequestData): Promise<void> {
-      const body: SendWAMessageModel = await this.handleMessage(whatsappRequestData);
-      
+    async killSessionWithKeyword(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc): Promise<boolean> {
       try {
+        // Vérification du type de message
+        if (whatsappRequestData.type !== TypeWhatsappMessage.TEXT) {
+          return false;
+        }
+
+        // Vérification du contenu du message
+        if (whatsappRequestData.data.text.body.toLocaleLowerCase().trim() !== StandardKeyWord.KILL_SESSION.toLocaleLowerCase()) {
+          return false;
+        }
+
+        // Vérification de la session
+        if (!session) {
+          return false;
+        }
+
+        // Mise à jour de la session
+        await sessionRepository.updateSession(session.id, { is_active: false });
+
+        // Construction du corps du message
+        const body = WhatsappHelperMethode.bodyBotMessage({
+          type: 'text',
+          message: StandardMessageEnum.END_SESSION,
+          recipientPhone: whatsappRequestData.phone_number
+        });
+
+        // Envoi du message via HTTP Service
         await HttpService.post<any>(
-          FacebookWebService.SEND_MESSAGE.replace(':phone_number_id', whatsappRequestData.phone_number_id)
-                                         .replace(':token', this.credential?.token!),
-          body
+            FacebookWebService.SEND_MESSAGE.replace(':phone_number_id', whatsappRequestData.phone_number_id)
+                                            .replace(':token', credential.token),
+            body
         );
 
-        // save user message in db
+        return true;
+    } catch (error) {
+        console.error('Error in killSessionWithKeyword:', error);
+        throw error;
+    }
+  }
+  
+
+    async botIsNotActive(whatsappRequestData: IWhatsappRequestData, credential: CredentialsDoc): Promise<boolean> {
+      try {
+        const lastChat = await chatRepository.getLastAdminOfConversation(whatsappRequestData.phone_number, credential.id);
+        if (!lastChat) {
+          return false;
+        }
+        
+        const difference = HelperMethod.getDifferenceInMinutes(new Date(lastChat?.updatedAt!));
+        if (difference > TimeValidSession.TIME_STOP_BOT) {
+          console.log('difference > TimeValidSession.TIME_STOP_BOT');
+          return false;
+        }
+        console.log('botIsNotActive ', difference);
+        return true;
+      } catch (error) {
+        console.log('botIsNotActive == ',error);
+        throw error
+      }
+        
+    }
+  
+    public async handleChatbotProcess(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc, conversation: ConversationDoc): Promise<void> {
+      try {
+        
+        const {message, imageUrl} = await this.handleMessage(whatsappRequestData, session, credential, conversation);
+        
+        await HttpService.post<any>(
+          FacebookWebService.SEND_MESSAGE.replace(':phone_number_id', whatsappRequestData.phone_number_id)
+                                         .replace(':token', credential.token),
+                                         message
+        );
+
+        //recuperer les valeurs à jours de credential, session, conversatoin
+        const conversationData = await conversationRepository.getById(conversation.id);
+        if (!conversationData) {
+          throw new Error('conversation not found Exception')
+        }
+        conversation = conversationData;
+        credential = await credentialsRepository.getCredentailByPhoneNumberId(whatsappRequestData.phone_number_id);
+        session = await sessionRepository.getMostRecentSession(conversation.id) as SessionDoc;
+        if (!session) {
+          throw new Error('session not found Exception')
+        }
+
+        // Sauvegarde du message utilisateur dans la base de données
         const contentChat = WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
-        if (whatsappRequestData.type === TypeWhatsappMessage.IMAGE && this.imageUrl) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, undefined, this.imageUrl,  this.session!);
+        if (whatsappRequestData.type === TypeWhatsappMessage.IMAGE && imageUrl) {
+          conversation = await webhookUtils.addChatInConversation(conversation, ChatOrigin.USER, undefined, imageUrl,  session);
         }
 
         if (whatsappRequestData.type !== TypeWhatsappMessage.IMAGE && contentChat) {
-          this.conversation = await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.USER, contentChat, undefined,  this.session!);
+          conversation = await webhookUtils.addChatInConversation(conversation, ChatOrigin.USER, contentChat, undefined,  session);
         }
 
-        // save bot message in db
-        const contentMessage = WhatsappHelperMethode.getContentWhasappSendMessage(body);
-        const contentText2 = body.type === TypeWhatsappMessage.IMAGE ? undefined : contentMessage;
+       // Sauvegarde du message bot dans la base de données
+        const contentMessage = WhatsappHelperMethode.getContentWhasappSendMessage(message);
+        const contentText2 = message.type === TypeWhatsappMessage.IMAGE ? undefined : contentMessage;
         const contentUrl2 = whatsappRequestData.type === TypeWhatsappMessage.IMAGE ? contentMessage : undefined;
-        await webhookUtils.addChatInConversation(this.conversation!, ChatOrigin.BOT, contentText2, contentUrl2, this.session!);
+        await webhookUtils.addChatInConversation(conversation, ChatOrigin.BOT, contentText2, contentUrl2, session);
         
       } catch (error) {
         throw error;
       }
     }
   
-    private async handleMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      switch (whatsappRequestData.type) {
-        case TypeWhatsappMessage.TEXT:
-          return this.handleTextMessage(whatsappRequestData);
-        case TypeWhatsappMessage.INTERACTIVE:
-          return this.handleInteractiveMessage(whatsappRequestData);
-        case TypeWhatsappMessage.IMAGE:
-          return this.handleImageMessage(whatsappRequestData);
-        case TypeWhatsappMessage.BUTTON_TEMPLATE:
-          return this.handleButtonTemplateMessage(whatsappRequestData);
-        default:
+    private async handleMessage(whatsappRequestData: IWhatsappRequestData,
+      session: SessionDoc | null,
+      credential: CredentialsDoc,
+      conversation: ConversationDoc):  Promise<{ message: SendWAMessageModel, imageUrl?: string }> {
+
+      try {
+        switch (whatsappRequestData.type) {
+          case TypeWhatsappMessage.TEXT:
+            return { message: await this.handleTextMessage(whatsappRequestData, session, credential, conversation) };
+          case TypeWhatsappMessage.INTERACTIVE:
+            return { message: await this.handleInteractiveMessage(whatsappRequestData, session, credential, conversation) };
+          case TypeWhatsappMessage.IMAGE:
+            return await this.handleImageMessage(whatsappRequestData, session, credential, conversation);
+          case TypeWhatsappMessage.BUTTON_TEMPLATE:
+            return { message: await this.handleButtonTemplateMessage(whatsappRequestData, session, credential, conversation) };
+          default:
+            return {
+              message: WhatsappHelperMethode.bodyBotMessage({
+                type: 'text',
+                recipientPhone: whatsappRequestData.phone_number,
+                message: StandardMessageEnum.INCORECT_KEYWORD
+              })
+            };
+        }
+      } catch (error) {
+        throw error;
+      }
+    }
+  
+    private async handleTextMessage(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc, conversation: ConversationDoc): Promise<SendWAMessageModel> {
+      try {
+        if (!session) {
+          return this.handleInitialUserMessage(whatsappRequestData, credential, conversation);
+        }
+        
+        session = await sessionService.syncronize(session, whatsappRequestData);
+        const scenarioItem = await scenarioRepository.findScenarioItemBySession(session);
+        return this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number, session, credential);
+      } catch (error) {
+        throw error;
+      }
+    
+    }
+  
+    private async handleImageMessage(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc, conversation: ConversationDoc): Promise<{ message: SendWAMessageModel, imageUrl?: string }> {
+      try {
+        if (!session) {
+          return {
+            message: WhatsappHelperMethode.bodyBotMessage({
+              type: 'text',
+              recipientPhone: whatsappRequestData.phone_number,
+              message: StandardMessageEnum.INCORECT_KEYWORD 
+            })
+          };
+        }
+    
+        const resUrl = await getUrlWhatsappFile(whatsappRequestData.data.image.id, credential.token);
+        const url = await downloadWhatsappFile(resUrl.url,credential.token!, resUrl.mime_type);
+        const imageUrl = url;
+  
+        session = await sessionService.syncronize(session, whatsappRequestData);
+        const scenarioItem = await scenarioRepository.findScenarioItemBySession(session);
+        const message = await this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number, session, credential);
+        return { message, imageUrl };
+      } catch (error) {
+        throw error;
+      }
+    }
+  
+    private async handleInteractiveMessage(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc, conversation: ConversationDoc): Promise<SendWAMessageModel> {
+      try {
+        if (!session) {
           return WhatsappHelperMethode.bodyBotMessage({
             type: 'text',
             recipientPhone: whatsappRequestData.phone_number,
             message: StandardMessageEnum.INCORECT_KEYWORD
           });
-      }
-    }
-  
-    private async handleTextMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      if (!this.session) {
-        return this.handleInitialUserMessage(whatsappRequestData);
-      }
-      this.session = await sessionService.syncronize(this.session, whatsappRequestData);
-      const scenarioItem = await scenarioRepository.findScenarioItemBySession(this.session);
-      return this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number);
-    }
-  
-    private async handleImageMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      if (!this.session) {
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: whatsappRequestData.phone_number,
-          message: StandardMessageEnum.INCORECT_KEYWORD 
-        });
-      }
-  
-      const resUrl = await getUrlWhatsappFile(whatsappRequestData.data.image.id, this.credential?.token!);
-      const url = await downloadWhatsappFile(resUrl.url, this.credential?.token!, resUrl.mime_type);
-      this.imageUrl = url;
-
-      this.session = await sessionService.syncronize(this.session, whatsappRequestData);
-      const scenarioItem = await scenarioRepository.findScenarioItemBySession(this.session);
-      return this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number);
-    }
-  
-    private async handleInteractiveMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      
-      if (!this.session) {
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: whatsappRequestData.phone_number,
-          message: StandardMessageEnum.INCORECT_KEYWORD
-        });
-      }
-  
-      this.session = await sessionService.syncronize(this.session, whatsappRequestData);
-      
-      const scenarioItem = await scenarioRepository.findScenarioItemBySession(this.session);
-      return this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number);
-    }
-  
-    private async handleButtonTemplateMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      return this.handleInitialUserMessage(whatsappRequestData);
-    }
-  
-    private async getBodyBotMessageByScenarioItem(scenarioItem: ScenarioItemsDoc | null, phoneNumber: string): Promise<SendWAMessageModel> {
-      if (!scenarioItem) {
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: phoneNumber,
-          message: StandardMessageEnum.INCOMPLTE_SCENARIO
-        });
+        }
+    
+        session = await sessionService.syncronize(session, whatsappRequestData);
+        
+        const scenarioItem = await scenarioRepository.findScenarioItemBySession(session);
+        return await this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number, session, credential);
+      } catch (error) {
+        throw error;
       }
       
-      if (scenarioItem.children.length === 0) {
-        this.session = await sessionRepository.updateSession(this.session?.id!, { is_active: false });
-        const rapport = await WhatsappHelperMethode.formatRapport(this.session!, this.credential!);
-
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: phoneNumber,
-          message: StandardMessageEnum.END_SCENARIO + rapport
-        });
-      }
-  
-      const updatedScenarioItem = await scenarioRepository.findScenarioItemWithChildren(scenarioItem);
-      const bodyRequest = WhatsappHelperMethode.bodyBotMessageByScenarioItem(updatedScenarioItem, phoneNumber);
-      
-      if (!bodyRequest) {
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: phoneNumber,
-          message: StandardMessageEnum.INCOMPLTE_SCENARIO
-        });
-      }
-  
-      return bodyRequest;
     }
   
-    private async handleInitialUserMessage(whatsappRequestData: IWhatsappRequestData): Promise<SendWAMessageModel> {
-      const messageContent = WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
-      const scenario = await scenarioRepository.findScenarioByKeywordAndPhoneNumberId(messageContent, whatsappRequestData.phone_number_id);
+    private async handleButtonTemplateMessage(whatsappRequestData: IWhatsappRequestData, session: SessionDoc | null, credential: CredentialsDoc, conversation: ConversationDoc): Promise<SendWAMessageModel> {
+      try {
+        return WhatsappHelperMethode.bodyBotMessage({type: 'text', message: 'scenario template process. Comming soon...', recipientPhone: whatsappRequestData.phone_number})
+      } catch (error) {
+        throw error;
+      }
       
-      if (!scenario) {
-        return WhatsappHelperMethode.bodyBotMessage({
-          type: 'text',
-          recipientPhone: whatsappRequestData.phone_number,
-          message: StandardMessageEnum.INCORECT_KEYWORD
-        });
-      } else {
-        const scenarioItem = await scenarioRepository.findScenarioItemWithEmptyParents(scenario.id!);
-        const bodyRequest = await this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number);
+    }
   
-        if (scenarioItem) {
-          this.session = await sessionRepository.createSession({
-            conversation_id: this.conversation?.id!,
-            current_scenario_item_id: scenarioItem.id,
-            is_active: true
+    private async getBodyBotMessageByScenarioItem(scenarioItem: ScenarioItemsDoc | null, phoneNumber: string, session: SessionDoc | null, credential: CredentialsDoc): Promise<SendWAMessageModel> {
+      try {
+        if (!scenarioItem) {
+          return WhatsappHelperMethode.bodyBotMessage({
+            type: 'text',
+            recipientPhone: phoneNumber,
+            message: StandardMessageEnum.INCOMPLTE_SCENARIO
           });
         }
+ 
+        if (scenarioItem.children.length === 0 && session) {
+          session = await sessionRepository.updateSession(session.id, { is_active: false });
+          const rapport = await WhatsappHelperMethode.formatRapport(session, credential);
   
+          return WhatsappHelperMethode.bodyBotMessage({
+            type: 'text',
+            recipientPhone: phoneNumber,
+            message: StandardMessageEnum.END_SCENARIO + rapport
+          });
+        }
+
+        if (scenarioItem.children.length === 0) {
+          return WhatsappHelperMethode.bodyBotMessage({
+            type: 'text',
+            recipientPhone: phoneNumber,
+            message: StandardMessageEnum.END_SCENARIO
+          });
+        }
+    
+        const updatedScenarioItem = await scenarioRepository.findScenarioItemWithChildren(scenarioItem);
+        const bodyRequest = WhatsappHelperMethode.bodyBotMessageByScenarioItem(updatedScenarioItem, phoneNumber);
+        
+        if (!bodyRequest) {
+          return WhatsappHelperMethode.bodyBotMessage({
+            type: 'text',
+            recipientPhone: phoneNumber,
+            message: StandardMessageEnum.INCOMPLTE_SCENARIO
+          });
+        }
+    
         return bodyRequest;
+      } catch (error) {
+        throw error;
       }
     }
   
-    // Method to destroy the instance
-    public destroy(): void {
-      this.credential = undefined;
-      this.session = null;
-      this.conversation = null;
-      this.imageUrl = undefined;
+    private async handleInitialUserMessage(whatsappRequestData: IWhatsappRequestData, credential: CredentialsDoc, conversation: ConversationDoc): Promise<SendWAMessageModel> {
+      try {
+        const messageContent = WhatsappHelperMethode.getContentMessageData(whatsappRequestData);
+        const scenario = await scenarioRepository.findScenarioByKeywordAndPhoneNumberId(messageContent, whatsappRequestData.phone_number_id);
+        
+        if (!scenario) {
+          return WhatsappHelperMethode.bodyBotMessage({
+            type: 'text',
+            recipientPhone: whatsappRequestData.phone_number,
+            message: StandardMessageEnum.INCORECT_KEYWORD
+          });
+        } else {
+          const scenarioItem = await scenarioRepository.findScenarioItemWithEmptyParents(scenario.id);
+          const bodyRequest = await this.getBodyBotMessageByScenarioItem(scenarioItem, whatsappRequestData.phone_number, null, credential);
+    
+          if (scenarioItem) {
+            const session = await sessionRepository.createSession({
+              conversation_id: conversation.id,
+              current_scenario_item_id: scenarioItem.id,
+              is_active: true
+            });
+          }
+    
+          return bodyRequest;
+        }
+      } catch (error) {
+        throw error
+      }
+    
     }
 }  
 

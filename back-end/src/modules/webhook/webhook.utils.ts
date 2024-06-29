@@ -17,7 +17,8 @@ class WebhookUtils {
 
             return conversation;
         } catch (error) {
-            throw error
+            console.log("init conversation", error);
+            throw new Error('init conversation')
         }
         
     }

@@ -48,30 +48,26 @@ class WebhookController {
             const whatsappRequestData: IWhatsappRequestData = WhatsappHelperMethode.formatWhatsappMessage(body);
             
             // Init service
-            const hasError = await webhookService.init(whatsappRequestData.phone_number_id, whatsappRequestData.phone_number);
-            if (hasError === false) {
-                return res.status(200).send({});   
-            }
+            const {credential, conversation, session} = await webhookService.init(whatsappRequestData.phone_number_id, whatsappRequestData.phone_number);
 
             // Check if bot is not active
-            if (await webhookService.botIsNotActive(whatsappRequestData)) {
+            if (await webhookService.botIsNotActive(whatsappRequestData, credential)) {
                 return res.status(200).send({});
             }
-
+            
             // Handle kill session
-            if (await webhookService.killSessionWithKeyword(whatsappRequestData)) {
+            if (await webhookService.killSessionWithKeyword(whatsappRequestData, session, credential)) {
                 return res.status(200).send({});
             }
 
             // Handle the chatbot process
-            await webhookService.handleChatbotProcess(whatsappRequestData);
-
-            // destroy service
-            webhookService.destroy();
+            await webhookService.handleChatbotProcess(whatsappRequestData, session, credential, conversation);
 
             return res.status(200).send({});
         } catch (error) {
-          throw error;
+            console.log('execption in controller: ', error);
+            
+            return res.status(200).send({});
         }
     }
 }

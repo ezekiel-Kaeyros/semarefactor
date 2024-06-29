@@ -34,40 +34,43 @@ export class WhatsappHelperMethode {
      * Format le body du message envoyé par le bot a partir du scenario_item
      */
     static bodyBotMessageByScenarioItem(scenarioItem: ScenarioItemsDoc, phone_number: string): SendWAMessageModel | undefined {
-        let recipient: WARecipient | undefined;
-        if (!scenarioItem.childrenDetails) {
-            return WhatsappHelperMethode.bodyBotMessage({
-                type: 'text',
-                recipientPhone: phone_number,
-                message: StandardMessageEnum.INCOMPLTE_SCENARIO
-            });
-        }
+        try {
+            let recipient: WARecipient | undefined;
+            if (!scenarioItem.childrenDetails) {
+                return WhatsappHelperMethode.bodyBotMessage({
+                    type: 'text',
+                    recipientPhone: phone_number,
+                    message: StandardMessageEnum.INCOMPLTE_SCENARIO
+                });
+            }
 
-        switch (scenarioItem.type) {
-            case 'text':
-                recipient = {type: 'text', message: scenarioItem.childrenDetails[0].label!, recipientPhone: phone_number}
-                break;
-            case 'button':
-                recipient = {type: 'button', message: scenarioItem.label!, recipientPhone: phone_number, listOfButtons: scenarioItem.childrenDetails?.map(item => (
-                    {id: item._id, title: item.label!} as ButtonContent
-                )) ?? []}
-                break;
-            case 'list':
-                recipient = {type: 'list', message: scenarioItem.label!, recipientPhone: phone_number, listOfSections: scenarioItem.childrenDetails?.map(item => (
-                    {id: item._id, title: item.label!} as ButtonContent
-                )) ?? []}
-                break;
-            case 'image':
-                recipient = {type: 'image', link: scenarioItem.childrenDetails[0].url!, recipientPhone: phone_number}
-                break;
-            default:
-                break;
-        }
-        if (recipient) {
+            switch (scenarioItem.type) {
+                case 'text':
+                    recipient = {type: 'text', message: scenarioItem.childrenDetails[0].label!, recipientPhone: phone_number}
+                    break;
+                case 'button':
+                    recipient = {type: 'button', message: scenarioItem.label!, recipientPhone: phone_number, listOfButtons: scenarioItem.childrenDetails?.map(item => (
+                        {id: item._id, title: item.label!} as ButtonContent
+                    )) ?? []}
+                    break;
+                case 'list':
+                    recipient = {type: 'list', message: scenarioItem.label!, recipientPhone: phone_number, listOfSections: scenarioItem.childrenDetails?.map(item => (
+                        {id: item._id, title: item.label!} as ButtonContent
+                    )) ?? []}
+                    break;
+                case 'image':
+                    recipient = {type: 'image', link: scenarioItem.childrenDetails[0].url!, recipientPhone: phone_number}
+                    break;
+                default:
+                    throw new Error('type message not found');
+            }
+           
             return this.bodyBotMessage(recipient);
-        } else {
-            return undefined;
+           
+        } catch (error) {
+            throw error
         }
+        
     }
 
     /**
@@ -89,7 +92,7 @@ export class WhatsappHelperMethode {
             case 'template':
                 return this.productsTemplateMessage(data)
             default:
-                return this.textMessage(data)
+                throw new Error ('Type not found');
         }
     }
 
@@ -296,25 +299,30 @@ export class WhatsappHelperMethode {
     }
 
     public static async formatRapport(session: SessionDoc, credential: CredentialsDoc): Promise<string> {
-        const chatFlows = session.chat_flow ?? [];
-        const messages: string[] = [];
-    
-        for (const chatFlow of chatFlows) {
-            if (chatFlow.to_display) {
-                try {
-                    const chat = await chatRepository.getById(chatFlow.chatId);
-                    if (chat) {
-                        const sender = chat.origin === ChatOrigin.USER ? 'Moi: ' : `${credential.company}: `;
-                        const text = chat.text ?? '';
-                        const url = chat.url ?? '';
-                        messages.push(`${sender}${text}\n${url}`);
+        try {
+            const chatFlows = session.chat_flow ?? [];
+            const messages: string[] = [];
+        
+            for (const chatFlow of chatFlows) {
+                if (chatFlow.to_display) {
+                    try {
+                        const chat = await chatRepository.getById(chatFlow.chatId);
+                        if (chat) {
+                            const sender = chat.origin === ChatOrigin.USER ? 'Moi: ' : `${credential.company}: `;
+                            const text = chat.text ?? '';
+                            const url = chat.url ?? '';
+                            messages.push(`${sender}${text}\n${url}`);
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching chat with ID ${chatFlow.chatId}:`, error);
                     }
-                } catch (error) {
-                    console.error(`Error fetching chat with ID ${chatFlow.chatId}:`, error);
                 }
             }
+        
+            return messages.join('\n');
+        } catch (error) {
+            throw error
         }
-    
-        return messages.join('\n');
+       
     }
 }

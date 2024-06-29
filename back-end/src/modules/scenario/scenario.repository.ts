@@ -83,7 +83,7 @@ class ScenarioRepository {
             return scenarioItem;
         } catch (error) {
             console.error('Erreur lors de la récupération du ScenarioItem à partir de la session:', error);
-            return null;
+            throw error;
         }
     }
       
